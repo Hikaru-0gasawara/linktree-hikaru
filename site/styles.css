@@ -93,6 +93,7 @@ button, a {
   font: inherit;
   text-decoration: none;
 }
+a[href^="mailto:"] { -webkit-touch-callout: default; }
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* out of flow so it costs no height; sits in the free corner beside the photo */

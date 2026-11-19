@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { STRINGS } from '../site/i18n.js';
+import { STRINGS, resumeUrl } from '../site/i18n.js';
 
 const html = readFileSync(new URL('../site/index.html', import.meta.url), 'utf8');
 const BASE = 'https://hikaru-card.okaru01.workers.dev/';
@@ -31,6 +31,18 @@ test('links are mailto/https and new tabs use noopener', () => {
     assert.match(href, /^(mailto:|https:\/\/)/, t);
     if (/target="_blank"/.test(t)) assert.match(/rel="([^"]*)"/.exec(t)?.[1] ?? '', /noopener/, t);
   }
+});
+
+test('links point to the exact contact URLs', () => {
+  for (const href of [
+    'mailto:hogasawara2311@outlook.com',
+    'https://www.linkedin.com/in/hikaru-ogasawara',
+    'https://github.com/Hikaru-0gasawara',
+    'https://hikaru-portfolio.okaru01.workers.dev/',
+  ]) {
+    assert.ok(html.includes(`href="${href}"`), `missing href ${href}`);
+  }
+  assert.equal(resumeUrl('pt'), 'https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-pt.pdf');
 });
 
 test('photo has alt and explicit size', () => {
