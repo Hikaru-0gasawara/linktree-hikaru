@@ -171,8 +171,8 @@ button, a {
 .ico.gold { background: var(--gold); }
 @media (hover: hover) and (pointer: fine) {
   .btn:hover { background: var(--raised); }
-  .btn.cta:hover { filter: brightness(1.08); }
-  .lang button:hover { color: var(--paper); }
+  .btn.cta:hover { background: var(--gold); filter: brightness(1.08); }
+  .lang button:not([aria-pressed="true"]):hover { color: var(--paper); }
 }
 
 .foot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; color: var(--dim); font-size: 10px; }
