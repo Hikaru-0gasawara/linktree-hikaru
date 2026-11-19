@@ -20,8 +20,18 @@ function apply(lang) {
   document.querySelector('meta[name="description"]').content = s.metaDescription;
 }
 
-apply(loadLang(storage, navigator.languages));
+let current = loadLang(storage, navigator.languages);
+apply(current);
 
-for (const b of document.querySelectorAll('[data-lang]')) {
-  b.addEventListener('click', () => { apply(b.dataset.lang); saveLang(storage, b.dataset.lang); });
+// 75ms fade out, swap, 75ms fade in. A click mid-fade restarts the timer, which always clears the class.
+let timer;
+function switchTo(lang) {
+  if (lang === current) return;
+  current = lang;
+  saveLang(storage, lang);
+  const root = document.documentElement;
+  root.classList.add('swapping');
+  clearTimeout(timer);
+  timer = setTimeout(() => { apply(lang); root.classList.remove('swapping'); }, 75);
 }
+for (const b of document.querySelectorAll('[data-lang]')) b.addEventListener('click', () => switchTo(b.dataset.lang));

@@ -177,3 +177,49 @@ button, a {
 
 .foot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; color: var(--dim); font-size: 10px; }
 .open { color: var(--jade); }
+
+/* ---- motion: transform + opacity only, nothing changes layout ---- */
+:root { --ease: cubic-bezier(.2, .7, .2, 1); }
+
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(var(--y)); } }
+@keyframes pop { from { opacity: 0; transform: scale(.96); } }
+@keyframes slide { from { opacity: 0; transform: translate(var(--tx), var(--ty)); } }
+@keyframes ring { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(2); } }
+
+.enter-lead { --y: 12px; animation: rise 550ms var(--ease) both; }
+.hud.enter-lead { animation-name: pop; }
+.hud i { animation: slide 350ms var(--ease) 120ms both; }
+.hud i:nth-child(1) { --tx: 4px; --ty: 4px; }
+.hud i:nth-child(2) { --tx: -4px; --ty: 4px; }
+.hud i:nth-child(3) { --tx: 4px; --ty: -4px; }
+.hud i:nth-child(4) { --tx: -4px; --ty: -4px; }
+.enter-support { --y: 8px; animation: rise 450ms var(--ease) 110ms both; }
+.enter-cta { --y: 6px; animation: rise 400ms var(--ease) 180ms both; }
+.enter-fade { animation: fade 400ms var(--ease) both; }
+/* same tab, later load: skip the entrance */
+.no-enter .enter-lead, .no-enter .enter-support, .no-enter .enter-cta, .no-enter .enter-fade, .no-enter .hud i { animation: none; }
+
+/* press feedback */
+.btn, .lang button { transition: transform 100ms ease-out, background-color 100ms ease-out, filter 100ms ease-out; }
+.btn:active, .lang button:active { transform: scale(.97); }
+.btn:active { background: var(--raised); }
+.btn.cta:active { background: var(--gold); filter: brightness(.92); }
+
+/* language crossfade: 75ms out, swap, 75ms in */
+[data-i18n], #ageSuffix { transition: opacity 75ms linear; }
+.swapping [data-i18n], .swapping #ageSuffix { opacity: 0; }
+
+/* available-dot pulse: pixel-stepped ring, starts after the entrance */
+.dot::after {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  border: 1px solid var(--jade); opacity: 0;
+  animation: ring 2.4s steps(6) 2.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-lead, .hud.enter-lead, .enter-support, .enter-cta, .enter-fade, .hud i { animation: fade 200ms ease-out both; }
+  .no-enter .enter-lead, .no-enter .enter-support, .no-enter .enter-cta, .no-enter .enter-fade, .no-enter .hud i { animation: none; }
+  .dot::after { animation: none; }
+  .btn:active, .lang button:active { transform: none; }
+}

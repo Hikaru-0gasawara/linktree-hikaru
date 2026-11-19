@@ -19,6 +19,10 @@
 <link rel="icon" href="data:,">
 <link rel="preload" href="fonts/anybody-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
+<script>
+// inline so the class lands before first paint: entrance plays once per tab session
+try { if (sessionStorage.entered) document.documentElement.classList.add('no-enter'); else sessionStorage.entered = 1; } catch {}
+</script>
 <script type="module" src="app.js"></script>
 </head>
 <body>

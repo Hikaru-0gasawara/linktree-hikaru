@@ -39,3 +39,9 @@ test('photo has alt and explicit size', () => {
   assert.match(img, /width="\d+"/);
   assert.match(img, /height="\d+"/);
 });
+
+test('wrangler.jsonc names the Worker and serves ./site', () => {
+  const cfg = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
+  assert.equal(cfg.name, 'hikaru-card');
+  assert.equal(cfg.assets.directory, './site');
+});
