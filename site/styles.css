@@ -55,7 +55,7 @@ body {
 
 .stars {
   position: fixed; inset: 0; pointer-events: none;
-  background-image: radial-gradient(var(--paper) 1px, transparent 1.5px), radial-gradient(var(--gold) 1px, transparent 1.5px);
+  background-image: radial-gradient(var(--paper) 1px, transparent 1.5px), radial-gradient(var(--muted) 1px, transparent 1.5px);
   background-size: 97px 83px, 151px 127px;
   background-position: 13px 21px, 61px 9px;
   opacity: .18;
@@ -109,9 +109,14 @@ button, a {
   border: 1px solid var(--hair2); border-left-width: 0;
 }
 .lang button:first-child::before { border-left-width: 1px; }
-.lang button[aria-pressed="true"] { color: var(--paper); }
-.lang button[aria-pressed="true"]::before { background: var(--raised); }
+.lang button[aria-pressed="true"] { color: var(--gold); z-index: 1; }
+.lang button[aria-pressed="true"]::before { background: var(--raised); border-color: var(--gold); border-left-width: 1px; margin-left: -1px; }
 .lang { isolation: isolate; }
+/* narrow phones: shrink the segments so the group clears the HUD's top-right bracket */
+@media (max-width: 359px) {
+  .lang { right: calc(4px + env(safe-area-inset-right, 0px)); }
+  .lang button { min-width: 28px; }
+}
 
 .hud { position: relative; width: var(--photo); height: var(--photo); margin: 0 auto 4px; flex: none; }
 .hud i { position: absolute; width: 11px; height: 11px; border: 0 solid var(--gold); }
@@ -166,7 +171,7 @@ button, a {
 .ico.gold { background: var(--gold); }
 @media (hover: hover) and (pointer: fine) {
   .btn:hover { background: var(--raised); }
-  .btn.cta:hover { background: #E3C062; }
+  .btn.cta:hover { filter: brightness(1.08); }
   .lang button:hover { color: var(--paper); }
 }
 
