@@ -1,0 +1,1 @@
+{"name":"hikaru-card","private":true,"type":"module","scripts":{"test":"node --test tests/","deploy":"npm test && npx wrangler deploy"},"engines":{"node":">=22"}}
