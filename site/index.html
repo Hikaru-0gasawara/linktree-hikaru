@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0F0B">
+<meta name="color-scheme" content="dark">
+<title>Hikaru Ogasawara</title>
+<meta name="description" content="Hikaru Ogasawara, estudante de Engenharia de Computação no Ibmec SP. Infra, segurança e dados.">
+<!-- site URL lives here only: change og:url / og:image together if the Workers name changes -->
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Hikaru Ogasawara">
+<meta property="og:description" content="Hikaru Ogasawara, estudante de Engenharia de Computação no Ibmec SP. Infra, segurança e dados.">
+<meta property="og:url" content="https://hikaru-card.okaru01.workers.dev/">
+<meta property="og:image" content="https://hikaru-card.okaru01.workers.dev/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:,">
+<link rel="preload" href="fonts/anybody-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="stars enter-fade" aria-hidden="true"></div>
+<div class="ground enter-fade" aria-hidden="true"></div>
+<main class="card">
+  <div class="lang enter-fade" role="group" aria-label="Idioma">
+    <button type="button" data-lang="pt" aria-pressed="true">PT</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    <button type="button" data-lang="ja" aria-pressed="false">JA</button>
+  </div>
+
+  <div class="hud enter-lead">
+    <i></i><i></i><i></i><i></i>
+    <div class="circ"><img src="img/hikaru.webp" width="280" height="280" alt="Foto de Hikaru Ogasawara"></div>
+    <span class="dot" aria-hidden="true"></span>
+  </div>
+
+  <h1 class="name enter-lead"><span>HIKARU</span> <span>OGASAWARA</span></h1>
+
+  <p class="role enter-support"><span data-i18n="role">Estudante de Eng. de Computação</span><br><span data-i18n="school">Ibmec SP</span> · <span id="age">21</span><span id="ageSuffix"> anos</span></p>
+
+  <dl class="panel enter-support">
+    <dt data-i18n="focusLabel">Foco</dt><dd data-i18n="focus">Infra · Segurança · Dados</dd>
+    <dt data-i18n="speaksLabel">Fala</dt><dd data-i18n="speaks">PT · EN · 日本語</dd>
+    <dt data-i18n="baseLabel">Base</dt><dd data-i18n="base">São Paulo, BR</dd>
+  </dl>
+
+  <nav class="links enter-cta">
+    <a class="btn cta" href="https://hikaru-portfolio.okaru01.workers.dev/" target="_blank" rel="noopener"><span aria-hidden="true">▶</span> <span data-i18n="play">Play</span></a>
+    <div class="grid">
+      <a class="btn" href="mailto:hogasawara2311@outlook.com"><span class="ico" aria-hidden="true"></span><span data-i18n="email">E-mail</span></a>
+      <a class="btn" href="https://www.linkedin.com/in/hikaru-ogasawara" target="_blank" rel="noopener"><span class="ico" aria-hidden="true"></span><span data-i18n="linkedin">LinkedIn</span></a>
+      <a class="btn" href="https://github.com/Hikaru-0gasawara" target="_blank" rel="noopener"><span class="ico" aria-hidden="true"></span><span data-i18n="github">GitHub</span></a>
+      <a class="btn" id="resume" href="https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-pt.pdf" target="_blank" rel="noopener"><span class="ico gold" aria-hidden="true"></span><span data-i18n="resume">Currículo</span></a>
+    </div>
+  </nav>
+
+  <footer class="foot enter-fade"><span class="open"><span aria-hidden="true">● </span><span data-i18n="open">aberto a projetos</span></span><span>SP · BR</span></footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,174 @@
+@font-face {
+  font-family: 'Anybody';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 50% 150%;
+  font-display: swap;
+  src: url('fonts/anybody-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --ground: #0A0F0B;
+  --panel: #0D130F;
+  --raised: #131B15;
+  --paper: #E8E4D4;
+  --muted: #A3AD9F;
+  --dim: #7F8A7C;
+  --gold: #D8B24A;
+  --jade: #62B37F;
+  --sky: #7FB2DA;
+  --hair: rgba(232, 228, 212, .11);
+  --hair2: rgba(232, 228, 212, .2);
+  --pad: 20px;
+  --photo: 116px;
+  --gap: clamp(6px, 1.4svh, 16px);
+  --ground-h: 46px;
+}
+@media (min-height: 760px) { :root { --photo: 128px; } }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--ground);
+}
+body {
+  min-height: 100svh;
+  background: var(--ground);
+  color: var(--paper);
+  font: 12px/1.5 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  overflow-x: hidden;
+}
+:lang(ja) body, :lang(ja) .card { font-family: 'JetBrains Mono', 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif; }
+:lang(ja) { word-break: keep-all; line-break: strict; overflow-wrap: anywhere; }
+
+.stars {
+  position: fixed; inset: 0; pointer-events: none;
+  background-image: radial-gradient(var(--paper) 1px, transparent 1.5px), radial-gradient(var(--gold) 1px, transparent 1.5px);
+  background-size: 97px 83px, 151px 127px;
+  background-position: 13px 21px, 61px 9px;
+  opacity: .18;
+}
+.ground {
+  position: fixed; left: 0; right: 0; bottom: 0; pointer-events: none;
+  height: calc(var(--ground-h) + env(safe-area-inset-bottom, 0px));
+  background:
+    repeating-linear-gradient(90deg, var(--raised) 0 8px, var(--panel) 8px 16px) 0 0 / 100% 8px no-repeat,
+    linear-gradient(var(--panel), var(--panel)) 0 8px / 100% 100% no-repeat;
+}
+
+.card {
+  position: relative;
+  max-width: 400px;
+  min-height: 100svh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding:
+    calc(18px + env(safe-area-inset-top, 0px))
+    calc(var(--pad) + env(safe-area-inset-right, 0px))
+    calc(var(--ground-h) + 6px + env(safe-area-inset-bottom, 0px))
+    calc(var(--pad) + env(safe-area-inset-left, 0px));
+}
+
+/* controls: native-feeling taps */
+button, a {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+}
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* out of flow so it costs no height; sits in the free corner beside the photo */
+.lang { position: absolute; z-index: 1; top: env(safe-area-inset-top, 0px); right: calc(6px + env(safe-area-inset-right, 0px)); display: flex; }
+.lang button {
+  min-width: 34px; min-height: 44px;
+  background: none; border: 0; cursor: pointer;
+  font-size: 10px; letter-spacing: .06em; color: var(--dim);
+  position: relative;
+}
+/* visual segment is smaller than the 44px tap target */
+.lang button::before {
+  content: ''; position: absolute; inset: 11px 0; z-index: -1;
+  border: 1px solid var(--hair2); border-left-width: 0;
+}
+.lang button:first-child::before { border-left-width: 1px; }
+.lang button[aria-pressed="true"] { color: var(--paper); }
+.lang button[aria-pressed="true"]::before { background: var(--raised); }
+.lang { isolation: isolate; }
+
+.hud { position: relative; width: var(--photo); height: var(--photo); margin: 0 auto 4px; flex: none; }
+.hud i { position: absolute; width: 11px; height: 11px; border: 0 solid var(--gold); }
+.hud i:nth-child(1) { top: -6px; left: -6px; border-top-width: 2px; border-left-width: 2px; }
+.hud i:nth-child(2) { top: -6px; right: -6px; border-top-width: 2px; border-right-width: 2px; }
+.hud i:nth-child(3) { bottom: -6px; left: -6px; border-bottom-width: 2px; border-left-width: 2px; }
+.hud i:nth-child(4) { bottom: -6px; right: -6px; border-bottom-width: 2px; border-right-width: 2px; }
+.circ {
+  width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 50% 35%, #1d2a20, var(--raised) 70%);
+}
+.circ img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+.dot {
+  position: absolute; right: 6px; bottom: 6px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--jade); border: 3px solid var(--ground);
+}
+
+.name {
+  font-family: 'Anybody', 'Arial Narrow', sans-serif;
+  font-weight: 900;
+  font-stretch: 56%;
+  font-variation-settings: 'wdth' 56;
+  /* OGASAWARA is ~3.93em wide at wdth 56: fill the content width, capped for desktop */
+  font-size: min(calc((100vw - 2 * var(--pad)) / 4), 10.5svh, 90px);
+  line-height: .86;
+  letter-spacing: -.01em;
+  text-align: center;
+  white-space: nowrap;
+}
+.name span { display: block; }
+
+.role { color: var(--muted); text-align: center; }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--hair);
+  padding: 8px 14px;
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 12px;
+}
+.panel dt { color: var(--gold); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; line-height: 18px; }
+
+.links { display: flex; flex-direction: column; gap: 8px; }
+.btn {
+  min-height: 44px; padding: 0 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--hair2);
+  cursor: pointer;
+}
+.btn.cta { min-height: 48px; background: var(--gold); color: var(--ground); border-color: var(--gold); font-weight: 600; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ico { width: 9px; height: 9px; background: var(--sky); flex: none; }
+.ico.gold { background: var(--gold); }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--raised); }
+  .btn.cta:hover { background: #E3C062; }
+  .lang button:hover { color: var(--paper); }
+}
+
+.foot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; color: var(--dim); font-size: 10px; }
+.open { color: var(--jade); }
