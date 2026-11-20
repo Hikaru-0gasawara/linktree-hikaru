@@ -382,7 +382,7 @@ html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-
 /* critters walk in the lane above the ground, in both modes; DOM order puts them over .ground and under
    the page content (plain: the positioned .card, so text and links stay on top) and .tcg-stage */
 .critters {
-  position: fixed; left: 0; right: 0; height: 58px; overflow: hidden; pointer-events: none;
+  position: fixed; left: 0; right: 0; height: 64px; overflow: hidden; pointer-events: none; /* 60px creeper at 3x */
   bottom: calc(var(--ground-h) + env(safe-area-inset-bottom, 0px));
 }
 .critter {
