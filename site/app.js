@@ -1,6 +1,7 @@
 import { STRINGS, BIRTH_DATE, ageOn, resumeUrl, loadLang, saveLang } from './i18n.js';
 import { saveTcg, fitScale } from './tcg.js';
 import { initCard } from './tcg-dom.js';
+import { initCritters } from './critters.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -31,6 +32,8 @@ const cardEl = document.querySelector('.tcg-card');
 const fit = document.querySelector('.tcg-fit');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
+const crittersEl = document.querySelector('.critters');
+let stopCritters = null;
 
 const fitNow = () => fit.style.setProperty('--s', fitScale(innerWidth, innerHeight));
 
@@ -44,9 +47,12 @@ function setMode(on) {
     cardEl.setAttribute('aria-label', STRINGS[current].cardLabel);
     // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
     if (langEl.parentNode === front) flipBtn.after(langEl);
+    stopCritters ??= initCritters(crittersEl);
   } else {
     for (const a of ['tabindex', 'role', 'aria-label']) cardEl.removeAttribute(a);
     if (langEl.parentNode !== front) front.prepend(langEl);
+    stopCritters?.();
+    stopCritters = null;
   }
   fitNow();
 }

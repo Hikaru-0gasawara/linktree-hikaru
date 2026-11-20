@@ -316,6 +316,21 @@ html.tcg .sheen {
 }
 html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
+/* critters walk in the lane above the ground; DOM order puts them over .ground and under .tcg-stage */
+.critters { display: none; }
+html.tcg .critters {
+  display: block; position: fixed; left: 0; right: 0; height: 58px; overflow: hidden; pointer-events: none;
+  bottom: calc(var(--ground-h) + env(safe-area-inset-bottom, 0px));
+}
+.critter {
+  position: absolute; left: 0; bottom: 0;
+  background-repeat: no-repeat; image-rendering: pixelated;
+  /* --sw (sheet width) and --n (frames) are set inline by critters.js */
+  animation: critter-walk .5s steps(var(--n, 2)) infinite;
+}
+.critter.stop { animation: none; }
+@keyframes critter-walk { to { background-position: calc(-1 * var(--sw)) 0; } }
+
 html.tcg .face-back { display: block; background: var(--ground); transform: rotateY(180deg); }
 html.tcg .face-back img {
   position: absolute; inset: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
