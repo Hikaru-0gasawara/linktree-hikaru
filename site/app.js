@@ -17,6 +17,8 @@ function apply(lang) {
   for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-pressed', b.dataset.lang === lang);
   document.querySelector('.lang').setAttribute('aria-label', s.langLabel);
   document.querySelector('.circ img').alt = s.photoAlt;
+  document.querySelector('.art img').alt = s.pfAlt;
+  document.getElementById('skills').replaceChildren(...s.skills.split(' · ').map((t) => Object.assign(document.createElement('li'), { textContent: t })));
   document.getElementById('resume').href = resumeUrl(lang);
   document.getElementById('age').textContent = age;
   document.getElementById('ageSuffix').textContent = (lang === 'ja' ? '' : ' ') + s.ageSuffix;
