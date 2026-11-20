@@ -39,7 +39,8 @@ export function initCard(cardEl, flipBtn) {
     press = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, moved: false, samples: [] };
   });
 
-  cardEl.addEventListener('pointermove', (e) => {
+  // move/up/cancel on window: a flick can leave the card before the 6px capture starts
+  addEventListener('pointermove', (e) => {
     if (!press || e.pointerId !== press.id) return;
     if (!press.moved) {
       if (Math.hypot(e.clientX - press.x, e.clientY - press.y) < THRESHOLD) return;
@@ -61,6 +62,9 @@ export function initCard(cardEl, flipBtn) {
     const { moved, samples } = press;
     press = null;
     cardEl.classList.remove('dragging');
+    // the click that follows this pointerup is dispatched before the timer; after that the guard is off
+    if (moved) setTimeout(() => { dragged = false; });
+    if (!coast) dragged = false;
     if (!moved || !coast || reduced.matches) return;
     // release velocity in px/frame from the last 80ms; a pause before release leaves nothing
     const recent = samples.filter((s) => s.t >= e.timeStamp - 80);
@@ -80,11 +84,14 @@ export function initCard(cardEl, flipBtn) {
     };
     anim = requestAnimationFrame(step);
   }
-  cardEl.addEventListener('pointerup', (e) => end(e, true));
-  cardEl.addEventListener('pointercancel', (e) => end(e, false));
+  addEventListener('pointerup', (e) => end(e, true));
+  addEventListener('pointercancel', (e) => end(e, false));
+
+  // a native link/image drag would cancel the pointer and stop the rotation
+  cardEl.addEventListener('dragstart', (e) => { if (on()) e.preventDefault(); });
 
   cardEl.addEventListener('click', (e) => {
-    if (!dragged) return;
+    if (!on() || !dragged) return;
     dragged = false;
     e.preventDefault();
     e.stopPropagation();
@@ -116,9 +123,10 @@ export function initCard(cardEl, flipBtn) {
 
   // mode switched off: stop loops and drop the rotation so the plain layout is untouched
   new MutationObserver(() => {
-    if (on() || (!anim && !press && q === IDENTITY)) return;
+    if (on()) return;
     stop();
     press = null;
+    dragged = false;
     q = IDENTITY;
     cardEl.classList.remove('dragging');
     for (const p of ['--rot', '--sheen-x', '--sheen-y']) cardEl.style.removeProperty(p);
