@@ -58,3 +58,21 @@ test('wrangler.jsonc names the Worker and serves ./site', () => {
   assert.equal(cfg.name, 'hikaru-card');
   assert.equal(cfg.assets.directory, './site');
 });
+
+test('has the TCG switch', () => {
+  const btn = /<button\b[^>]*class="tcg-toggle"[^>]*>/.exec(html)?.[0] ?? '';
+  assert.match(btn, /type="button"/);
+  assert.match(btn, /aria-pressed="/);
+});
+
+test('back art is decorative and lazy', () => {
+  const img = /<img\b[^>]*src="img\/card-back\.webp"[^>]*>/.exec(html)?.[0] ?? '';
+  for (const a of ['alt=""', 'width="688"', 'height="961"', 'loading="lazy"']) assert.ok(img.includes(a), `missing ${a} in ${img}`);
+});
+
+test('mode class is set before paint', () => {
+  const head = html.split('</head>')[0];
+  const inline = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
+  assert.ok(inline.includes("'tcg'"));
+  assert.ok(inline.includes("matchMedia('(hover: hover) and (pointer: fine)')"));
+});

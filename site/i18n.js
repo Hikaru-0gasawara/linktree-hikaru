@@ -11,6 +11,7 @@ export const STRINGS = {
     open: 'aberto a projetos', photoAlt: 'Foto de Hikaru Ogasawara',
     metaDescription: 'Hikaru Ogasawara, estudante de Engenharia de Computação no Ibmec SP. Infra, segurança e dados.',
     langLabel: 'Idioma',
+    tcgLabel: 'TCG: modo carta', flip: 'Virar', cardLabel: 'Cartão de Hikaru Ogasawara',
   },
   en: {
     role: 'Computer Engineering student', school: 'Ibmec SP', ageSuffix: 'y/o',
@@ -21,6 +22,7 @@ export const STRINGS = {
     open: 'open to projects', photoAlt: 'Photo of Hikaru Ogasawara',
     metaDescription: 'Hikaru Ogasawara, Computer Engineering student at Ibmec SP. Infra, security and data.',
     langLabel: 'Language',
+    tcgLabel: 'TCG: card mode', flip: 'Flip', cardLabel: "Hikaru Ogasawara's card",
   },
   ja: {
     role: 'コンピューター工学を専攻する学生', school: 'Ibmec SP', ageSuffix: '歳',
@@ -31,6 +33,7 @@ export const STRINGS = {
     open: '案件募集中', photoAlt: '小笠原ヒカルの写真',
     metaDescription: '小笠原ヒカル。Ibmec SPでコンピューター工学を学ぶ学生。インフラ、セキュリティ、データ。',
     langLabel: '言語',
+    tcgLabel: 'TCG：カードモード', flip: '裏返す', cardLabel: '小笠原ヒカルのカード',
   },
 };
 
