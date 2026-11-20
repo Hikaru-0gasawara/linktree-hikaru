@@ -3,6 +3,7 @@ import { saveTcg, fitScale, IDENTITY } from './tcg.js';
 import { deckScale } from './deck.js';
 import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
+import { initReveal } from './reveal.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -19,6 +20,7 @@ function apply(lang) {
   document.querySelector('.lang').setAttribute('aria-label', s.langLabel);
   document.querySelector('.circ img').alt = s.photoAlt;
   document.querySelector('.art img').alt = s.pfAlt;
+  for (const img of document.querySelectorAll('[data-i18n-alt]')) img.alt = s[img.dataset.i18nAlt];
   document.getElementById('skills').replaceChildren(...s.skills.split(' · ').map((t) => Object.assign(document.createElement('li'), { textContent: t })));
   document.getElementById('resume').href = resumeUrl(lang);
   document.getElementById('age').textContent = age;
@@ -29,8 +31,13 @@ function apply(lang) {
   if (root.classList.contains('tcg')) labelCards(s);
 }
 
-// Hikaru's card has its own label; project cards are named by their title
-const labelCards = (s) => { for (const c of cards) c.setAttribute('aria-label', c.parentNode.dataset.card === 'hikaru' ? s.cardLabel : c.querySelector('.name').textContent); };
+// Hikaru's card has its own label; project cards are named by their title; image cards by their slot's data-label key
+const labelCards = (s) => {
+  for (const c of cards) {
+    const slot = c.parentNode;
+    c.setAttribute('aria-label', slot.dataset.card === 'hikaru' ? s.cardLabel : slot.dataset.label ? s[slot.dataset.label] : c.querySelector('.name').textContent);
+  }
+};
 
 const root = document.documentElement;
 const toggle = document.querySelector('.tcg-toggle');
@@ -43,7 +50,6 @@ const stage = document.querySelector('.tcg-stage');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
-const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
 const focused = () => root.classList.contains('deck-focus');
 // the whole deck shows one face; only a focused card turns on its own
@@ -74,6 +80,7 @@ apply(current);
 setMode(root.classList.contains('tcg'));
 initCritters(crittersEl); // once, for both modes
 const deck = initDeck(document.querySelector('.deck-track'));
+initReveal(document.querySelector('.deck-track'));
 const turnAll = () => { for (const c of deck.controllers) c.turnTo(deckFace()); };
 flipBtn.addEventListener('click', () => { if (focused()) deck.controllers[deck.current()]?.flip(); else { back = !back; turnAll(); } });
 resetBtn.addEventListener('click', () => { if (focused()) deck.controllers[deck.current()]?.reset(); else { back = false; turnAll(); } });
@@ -91,8 +98,6 @@ function setFocus(yes) {
   root.classList.toggle('deck-focus', yes);
   deck.lockPaging(yes);
   fitNow();
-  // reduced motion: no growth, the new size fades in
-  if (reduced.matches) fit.animate({ opacity: [0, 1] }, { duration: 150, easing: 'ease-out' });
 }
 let tap = null; // a press on the current card that may still be a tap (< 6px); links and buttons keep their own tap
 stage.addEventListener('pointerdown', (e) => {

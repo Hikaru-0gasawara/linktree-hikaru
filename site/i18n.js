@@ -21,6 +21,9 @@ export const STRINGS = {
     pfHighlightsLabel: 'Destaques', pfHighlights: 'TV 3D, boot, passagens secretas',
     pfStatusLabel: 'Status', pfStatus: 'no ar',
     pfCode: 'Código', pfAlt: 'Primeira tela do portfólio: menu de idiomas em pixel art',
+    mtgLabel: 'Carta Magic de Hikaru Ogasawara',
+    mtgAlt: 'Carta no estilo Magic: Hikaru Ogasawara, Criatura Lendária — Engenheiro Humano. De braços cruzados, com 小笠原光 na vertical. Vigilância, improvisar, Changeling; sempre que um projeto começa (infra, segurança, dados, IoT ou software), você pode colocar esta criatura no campo de batalha. “Aberto a projetos e propostas.”',
+    mtgBackAlt: 'Verso da carta, como invocar: NFC, QR code para esta página, São Paulo, foco em Infra · Segurança · Dados, fala PT · EN · 日本語, e-mail, LinkedIn e GitHub.',
     reset: 'Resetar', close: 'Fechar',
   },
   en: {
@@ -42,6 +45,9 @@ export const STRINGS = {
     pfHighlightsLabel: 'Highlights', pfHighlights: '3D TV, boot, secret passages',
     pfStatusLabel: 'Status', pfStatus: 'live',
     pfCode: 'Code', pfAlt: 'First screen of the portfolio: a pixel-art language menu',
+    mtgLabel: "Hikaru Ogasawara's Magic card",
+    mtgAlt: 'Magic-style card: Hikaru Ogasawara, Legendary Creature — Human Engineer. Arms crossed, 小笠原光 written down the side. Vigilance, improvise, Changeling; whenever a project begins (infrastructure, security, data, IoT or software), you may put this creature onto the battlefield. “Open to projects and proposals.”',
+    mtgBackAlt: 'Card back, how to summon: NFC, a QR code to this page, São Paulo, focus on Infra · Security · Data, speaks PT · EN · 日本語, e-mail, LinkedIn and GitHub.',
     reset: 'Reset', close: 'Close',
   },
   ja: {
@@ -63,6 +69,9 @@ export const STRINGS = {
     pfHighlightsLabel: '見どころ', pfHighlights: '3Dテレビ・起動画面・隠し通路',
     pfStatusLabel: '状態', pfStatus: '公開中',
     pfCode: 'コード', pfAlt: 'ポートフォリオの最初の画面：ピクセルアートの言語選択メニュー',
+    mtgLabel: '小笠原ヒカルのMagicカード',
+    mtgAlt: 'Magic風カード：小笠原ヒカル、伝説のクリーチャー — 人間・エンジニア。腕を組んだ姿と縦書きの小笠原光。警戒、即席、多相。プロジェクトが始まるたび（インフラ、セキュリティ、データ、IoT、ソフトウェア）、このクリーチャーを戦場に出してよい。「プロジェクトとご提案、歓迎します。」',
+    mtgBackAlt: 'カードの裏面「召喚のしかた」：NFC、このページへのQRコード、サンパウロ、専門はインフラ・セキュリティ・データ、話せる言語はPT・EN・日本語、メール、LinkedIn、GitHub。',
     reset: 'リセット', close: '閉じる',
   },
 };

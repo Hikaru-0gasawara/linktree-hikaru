@@ -83,15 +83,33 @@ const CODE = 'https://github.com/Hikaru-0gasawara/Portifolio';
 const slots = html.split('<div class="deck-slot"').slice(1);
 const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
 
-test('deck has a Hikaru and a portfolio slot, each a full card', () => {
-  assert.equal(slots.length, 2);
-  assert.ok(slot('hikaru') && slot('portfolio'));
+test('deck: Hikaru first, then project cards, then the Magic-format cards, always last', () => {
+  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'mtg-hikaru']);
+  const mtg = slots.map((s) => s.includes('class="card face-front mtg"'));
+  const first = mtg.indexOf(true);
+  assert.ok(first > 0 && mtg.slice(first).every(Boolean), 'a Magic card before a project card');
   for (const s of slots) {
     assert.match(s, /class="tcg-card"/);
-    assert.match(s, /class="card face-front"/);
-    assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);
+    if (s.includes('face-front mtg')) {
+      assert.match(s, /data-label="mtgLabel"/);
+      assert.match(s, /class="face-back mtg"><img src="img\/mtg-hikaru-back\.webp"/);
+    } else {
+      assert.match(s, /class="card face-front"/);
+      assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);
+    }
   }
   assert.equal([...html.matchAll(/<main\b/g)].length, 1);
+});
+
+test('image alt texts are translated', () => {
+  const keys = [...html.matchAll(/data-i18n-alt="([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(keys.length, 2);
+  for (const k of keys) assert.ok(k in STRINGS.pt, `unknown key ${k}`);
+});
+
+test('no phone number on the site', () => {
+  assert.doesNotMatch(html, /97119|\+55/);
+  for (const l of Object.keys(STRINGS)) assert.doesNotMatch(JSON.stringify(STRINGS[l]), /97119|\+55/);
 });
 
 test('Hikaru card has the four contact links and no Play', () => {

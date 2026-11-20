@@ -106,7 +106,6 @@ export function initCard(cardEl) {
     if (!on()) return;
     stop();
     const from = q;
-    if (reduced.matches) { q = to; write(); return; }
     const start = performance.now();
     const step = (now) => {
       const t = Math.min((now - start) / 500, 1);
@@ -149,6 +148,7 @@ export function initCard(cardEl) {
 export const setInteractive = (el, yes) => { el.closest('.deck-slot').inert = !yes; };
 
 const OMEGA = 11; // spring stiffness (1/s): critically damped, a leaf settles in about half a second
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 const PAGE = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1, Home: -Infinity, End: Infinity };
 
 // card mode: the track's native scroll (snap, one stop per card) sets the target; the shown progress follows it on a spring,
@@ -158,7 +158,9 @@ export function initDeck(track) {
   const n = slots.length;
   const controllers = slots.map((s) => initCard(s.querySelector('.tcg-card')));
   const coarse = matchMedia('(pointer: coarse)'); // touch leafs sideways; mouse and trackpad scroll down
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
   let cur = -1, raf = 0, locked = false, wasOn = null;
+  let drag = null; // a mouse or pen press on the stage that may become a leaf: { id, x, p0, per, moved, samples }
   let target = 0, shown = 0, vel = 0, last = 0;
   const deck = track.querySelector('.deck');
   // snap stops: an empty one at 0 (the sticky stage cannot snap: its position moves with the scroll), then one per further card,
@@ -175,7 +177,9 @@ export function initDeck(track) {
     target = progressFrom(coarse.matches ? track.scrollLeft : track.scrollTop, size, n);
     if (Math.abs(target - Math.round(target)) < 1e-3) target = Math.round(target); // sub-pixel snap offsets count as the stop
     const dt = last ? Math.min((now - last) / 1000, 0.05) : 1 / 60;
-    if (reduced.matches || cur < 0) [shown, vel] = [target, 0];
+    // a drag holds the deck to the pointer; otherwise the spring follows (reduced motion too: the leaf still slides,
+    // poseFor drops the swing and tilt)
+    if (drag?.moved || cur < 0) [shown, vel] = [target, drag?.moved ? vel : 0];
     else [shown, vel] = springStep(shown, vel, target, dt, OMEGA);
     if (Math.abs(shown - target) < 1e-4 && Math.abs(vel) < 1e-3) [shown, vel] = [target, 0];
     last = shown === target ? 0 : now;
@@ -189,11 +193,11 @@ export function initDeck(track) {
       slot.style.setProperty('--shade', shade);
     });
     if (Math.round(p) !== cur) {
+      if (cur >= 0) tiltOff(slots[cur]);
       // focus inside the card that is going inert moves to the new card: wrapper to wrapper, otherwise to its first
       // link or button, which does not consume arrows, so ←/→ keep paging
       const was = document.activeElement;
       const handOff = slots[cur]?.contains(was);
-      const first = cur < 0;
       cur = Math.round(p);
       slots.forEach((slot, i) => setInteractive(slot, i === cur));
       if (handOff) {
@@ -201,8 +205,6 @@ export function initDeck(track) {
         const to = was.classList.contains('tcg-card') ? card : card.querySelector('.face-front :is(a, button)') ?? card;
         to.focus({ preventScroll: true });
       }
-      // reduced motion: no turn, the new arrangement fades in instead
-      if (!first && reduced.matches) deck.animate({ opacity: [0, 1] }, { duration: 150, easing: 'ease-out' });
     }
   }
   const schedule = () => { raf ||= requestAnimationFrame(update); };
@@ -224,21 +226,102 @@ export function initDeck(track) {
   new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
   sync();
 
+  // the spring animates every page turn, so the scroll itself jumps
+  const scrollToStop = (k) => track.scrollTo({ [coarse.matches ? 'left' : 'top']: clamp(k, 0, n - 1) * stopSize() });
   addEventListener('keydown', (e) => {
     // defaultPrevented: a focused card wrapper already used the arrow to rotate
     if (!on() || locked || cur < 0 || e.defaultPrevented || !(e.key in PAGE) || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
-    const to = Math.min(Math.max(Math.round(target) + PAGE[e.key], 0), n - 1) * stopSize();
-    track.scrollTo({ [coarse.matches ? 'left' : 'top']: to, behavior: 'smooth' });
+    scrollToStop(Math.round(target) + PAGE[e.key]);
   });
+
+  // mouse and pen: a sideways drag anywhere on the stage leafs like a swipe; the deck holds to the pointer, and on release
+  // the spring carries the drag's speed to the nearest card (a flick reaches the next one). Touch scrolls the track natively.
+  track.addEventListener('pointerdown', (e) => {
+    if (!on() || locked || drag || e.pointerType === 'touch' || e.button !== 0 || e.target.closest('button')) return;
+    drag = { id: e.pointerId, x: e.clientX, p0: target, per: deck.getBoundingClientRect().width * 0.62, moved: false, samples: [] };
+  });
+  addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (!drag.moved) {
+      if (Math.abs(dx) < THRESHOLD) return;
+      drag.moved = true;
+      track.setPointerCapture(e.pointerId); // only now, so a click still reaches links and the card
+      track.style.scrollSnapType = 'none';
+      root.classList.add('leafing');
+      if (cur >= 0) tiltOff(slots[cur]);
+    }
+    drag.samples.push({ t: e.timeStamp, x: e.clientX });
+    while (drag.samples[0].t < e.timeStamp - 100) drag.samples.shift();
+    track[coarse.matches ? 'scrollLeft' : 'scrollTop'] = clamp(drag.p0 - dx / drag.per, 0, n - 1) * stopSize();
+  });
+  let swallow = false; // the click that ends a leaf is not a click on the card
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const { moved, samples, per } = drag;
+    drag = null;
+    if (!moved) return;
+    root.classList.remove('leafing');
+    track.style.scrollSnapType = '';
+    const s0 = samples[0], span = (e.timeStamp - s0.t) / 1000;
+    vel = span > 0.01 ? -(e.clientX - s0.x) / per / span : 0; // cards per second, handed to the spring
+    scrollToStop(Math.round(target + clamp(vel * 0.25, -0.5, 0.5)));
+    schedule();
+    swallow = true;
+    setTimeout(() => { swallow = false; });
+  }
+  addEventListener('pointerup', endDrag);
+  addEventListener('pointercancel', endDrag);
+  track.addEventListener('click', (e) => { if (swallow) { e.preventDefault(); e.stopPropagation(); } }, true);
+
+  // trackpad: a sideways two-finger swipe pages once per gesture (its momentum tail keeps the lock)
+  let acc = 0, wheelLock = 0;
+  track.addEventListener('wheel', (e) => {
+    if (!on() || locked || coarse.matches || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    if (e.timeStamp < wheelLock) { wheelLock = e.timeStamp + 200; return; }
+    acc += e.deltaX;
+    if (Math.abs(acc) > 40) { scrollToStop(Math.round(target) + Math.sign(acc)); acc = 0; wheelLock = e.timeStamp + 200; }
+  }, { passive: false });
+
+  // hover tilt (fine pointer, browse, full motion): the current card leans toward the cursor and its sheen follows
+  let tilt = [0, 0], aim = [0, 0], tiltRaf = 0;
+  function tiltOff(slot) {
+    tilt = aim = [0, 0];
+    cancelAnimationFrame(tiltRaf); tiltRaf = 0;
+    const card = slot.querySelector('.tcg-card');
+    for (const v of ['--tilt', '--tilt-x', '--tilt-y']) card.style.removeProperty(v);
+  }
+  function tiltStep() {
+    tiltRaf = 0;
+    if (cur < 0) return;
+    tilt = tilt.map((t, i) => t + (aim[i] - t) * 0.18);
+    const card = slots[cur].querySelector('.tcg-card');
+    const [x, y] = tilt;
+    card.style.setProperty('--tilt', `rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 8).toFixed(2)}deg)`);
+    card.style.setProperty('--tilt-x', (x * 0.35).toFixed(3));
+    card.style.setProperty('--tilt-y', (y * 0.35).toFixed(3));
+    if (Math.hypot(aim[0] - x, aim[1] - y) > 1e-3) tiltRaf = requestAnimationFrame(tiltStep);
+    else if (!aim[0] && !aim[1]) tiltOff(slots[cur]);
+  }
+  const aimAt = (a) => { aim = a; tiltRaf ||= requestAnimationFrame(tiltStep); };
+  track.addEventListener('pointermove', (e) => {
+    if (!on() || locked || drag?.moved || cur < 0 || e.pointerType !== 'mouse' || !fine.matches || reduced.matches) return;
+    const r = slots[cur].querySelector('.tcg-card').getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    aimAt(inside ? [clamp((e.clientX - r.left) / r.width * 2 - 1, -1, 1), clamp((e.clientY - r.top) / r.height * 2 - 1, -1, 1)] : [0, 0]);
+  });
+  track.addEventListener('pointerleave', () => { if (cur >= 0) aimAt([0, 0]); });
 
   return {
     current: () => cur,
     controllers,
     // focus mode: no paging; overflow hidden keeps the snap position
     lockPaging(yes) {
+      if (yes && cur >= 0) tiltOff(slots[cur]);
       // settle on the current stop first, so a tap during a snap never locks between cards
-      if (yes) track.scrollTo({ [coarse.matches ? 'left' : 'top']: Math.round(shown) * stopSize() });
+      if (yes) scrollToStop(Math.round(shown));
       locked = yes; track.style.overflow = yes ? 'hidden' : '';
     },
   };

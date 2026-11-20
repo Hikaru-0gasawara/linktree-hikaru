@@ -1,5 +1,6 @@
 // Deck pose math: each card's pose is a pure function of progress p.
-export const deckScale = (vw, vh) => Math.min((vw - 96) / 460, (vh - 160) / 642, 1.1);
+// narrow phones keep the iPhone 17's proportion (the card is about 76% of the width) instead of losing a fixed 96px
+export const deckScale = (vw, vh) => Math.min(Math.max(vw * 0.76, vw - 96) / 460, (vh - 160) / 642, 1.1);
 
 export const progressFrom = (scroll, stop, n) => Math.min(Math.max(scroll / stop, 0), n - 1);
 
