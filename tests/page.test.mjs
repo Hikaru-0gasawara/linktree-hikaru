@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { STRINGS, resumeUrl } from '../site/i18n.js';
 
 const html = readFileSync(new URL('../site/index.html', import.meta.url), 'utf8');
-const BASE = 'https://hikaru-card.okaru01.workers.dev/';
+const BASE = 'https://hikaru-card.vercel.app/';
 
 test('viewport, theme-color and Open Graph', () => {
   const vp = /<meta name="viewport" content="([^"]+)"/.exec(html)?.[1] ?? '';
@@ -28,7 +28,7 @@ test('links are mailto/https and new tabs use noopener', () => {
   assert.ok(tags.length >= 5);
   for (const t of tags) {
     const href = /href="([^"]*)"/.exec(t)?.[1] ?? '';
-    assert.match(href, /^(mailto:|https:\/\/)/, t);
+    assert.match(href, /^(mailto:|https:\/\/|\/resume\/hikaru-(pt|en|ja)\.pdf$)/, t);
     if (/target="_blank"/.test(t)) assert.match(/rel="([^"]*)"/.exec(t)?.[1] ?? '', /noopener/, t);
   }
 });
@@ -42,7 +42,8 @@ test('links point to the exact contact URLs', () => {
   ]) {
     assert.ok(html.includes(`href="${href}"`), `missing href ${href}`);
   }
-  assert.equal(resumeUrl('pt'), 'https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-pt.pdf');
+  assert.equal(resumeUrl('pt'), '/resume/hikaru-pt.pdf');
+  for (const l of ['pt', 'en', 'ja']) assert.ok(existsSync(new URL(`../site${resumeUrl(l)}`, import.meta.url)), `missing ${resumeUrl(l)}`);
 });
 
 test('photo has alt and explicit size', () => {

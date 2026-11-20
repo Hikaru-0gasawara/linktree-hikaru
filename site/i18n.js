@@ -51,7 +51,7 @@ export function ageOn(birthISO, now) {
   return age;
 }
 
-export const resumeUrl = (lang) => `https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-${lang}.pdf`;
+export const resumeUrl = (lang) => `/resume/hikaru-${lang}.pdf`;
 
 export function loadLang(storage, navLangs) {
   try {

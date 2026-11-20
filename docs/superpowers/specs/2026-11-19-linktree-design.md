@@ -112,15 +112,15 @@ Other motion:
 
 ## Decided by the user
 
-- **▶ Play** opens the portfolio (https://hikaru-portfolio.okaru01.workers.dev/), which is itself a playable pixel-art room. The grid's 4th slot is **Currículo / Résumé / 履歴書**, opening `https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-{pt,en,ja}.pdf` for the current language (gold marker).
+- **▶ Play** opens the portfolio (https://hikaru-portfolio.okaru01.workers.dev/), which is itself a playable pixel-art room. The grid's 4th slot is **Currículo / Résumé / 履歴書**, opening `/resume/hikaru-{pt,en,ja}.pdf` (hosted in this site) for the current language (gold marker).
 - **Age** is computed from the birth date in one `BIRTH_DATE` constant in the JS. Until the user supplies the date, the constant is empty and the page shows the static fallback `21`.
 
 ## Calls made after the builder check (mine, check them)
 
 - Everything the page needs (fonts, photo, strings) is copied into this repo. Nothing reads the Portifolio repo at runtime or build time.
-- Résumé PDFs are live at `https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-{pt,en,ja}.pdf` (the portfolio build copies `public/resume` into `dist/resume`).
+- Résumé PDFs live in `site/resume/`, copied from the Data Vault (`!games/workdump/CVs_Hikaru_Ogasawara/CVs/CV_Hikaru_Ogasawara_{PT,EN,JP}.pdf`). The site copies have the phone number removed (copy them to a temp folder as `hikaru-{pt,en,ja}.pdf`, then `python scripts/strip-phone.py <that-folder> site/resume`; needs `pymupdf`); the Vault originals keep it. Re-run it when the CV changes.
 - The mockup is indicative. When it conflicts with the tokens or rules in this doc, the doc wins.
-- Workers name `hikaru-card`, so the expected URL is `https://hikaru-card.okaru01.workers.dev/`. og:url and og:image use that, in one constant that's easy to change.
+- Hosted on Vercel (project `hikaru-card`) at `https://hikaru-card.vercel.app/`. og:url and og:image use that, in one constant that's easy to change.
 - The e-mail address is not shown as text. The E-mail button is a mailto link; long-press copies it.
 
 ## Left to the builder

@@ -24,7 +24,7 @@ test('ageOn', () => {
 });
 
 test('resumeUrl', () => {
-  assert.equal(resumeUrl('ja'), 'https://hikaru-portfolio.okaru01.workers.dev/resume/hikaru-ja.pdf');
+  assert.equal(resumeUrl('ja'), '/resume/hikaru-ja.pdf');
 });
 
 test('loadLang survives throwing storage', () => {
