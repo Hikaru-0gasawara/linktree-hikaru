@@ -328,15 +328,16 @@ html.tcg .deck-slot::after {
 html.tcg .tcg-card {
   display: block; position: relative; width: 100%; height: 100%;
   transform-style: preserve-3d; transform: var(--rot, rotate3d(0, 1, 0, 0deg));
-  touch-action: none; cursor: grab;
+  cursor: zoom-in; /* browse: a click focuses the card; its links keep their own cursor */
+  -webkit-user-select: none; user-select: none; /* a card is an object: a drag never selects its text */
 }
 /* touch browse: a horizontal swipe on the card scrolls the track (rotation is for focus mode) */
 @media (pointer: coarse) { html.tcg .tcg-card { touch-action: pan-x; } }
-/* focus mode (touch): the stage grows to the full fit size (app.js sets --s), the other cards fade away, the card rotates */
+/* focus mode: the stage grows to the full fit size (app.js sets --s), the other cards fade away, the card rotates */
 html.tcg .tcg-fit { transition: transform 300ms var(--ease); }
 html.tcg .deck-slot { transition: opacity 300ms var(--ease); }
 html.deck-focus .deck-slot[inert] { opacity: 0 !important; } /* over the inline pose; inert already drops pointer events */
-html.deck-focus .tcg-card { touch-action: none; }
+html.deck-focus .tcg-card { touch-action: none; cursor: grab; }
 
 /* faces: corners cut in 2 pixel steps of 4px */
 html.tcg .face-front, html.tcg .face-back {
@@ -407,4 +408,22 @@ html.tcg .face-back img {
   html.tcg .tcg-fit { animation: fade 200ms ease-out both; transition: none; }
   .no-enter.tcg .tcg-fit { animation: none; }
   .tcg-toggle:active, .tcg-flip:active, .tcg-reset:active, .deck-close:active { transform: none; }
+}
+
+/* plain mode, scroll-driven (where supported): the portfolio's blocks rise into place as each enters the viewport, which
+   staggers them by position; Hikaru's section settles back as it leaves, so the next card reads as laid on top */
+@keyframes deal-in { from { opacity: 0; transform: translateY(24px) scale(.98); } }
+@keyframes settle-back { to { opacity: .4; transform: scale(.95); } }
+@keyframes fade-in { from { opacity: 0; } }
+@supports (animation-timeline: view()) {
+  html:not(.tcg) .deck-slot + .deck-slot .card > :not(.sheen) {
+    animation: deal-in linear both; animation-timeline: view(); animation-range: entry 0% entry 100%;
+  }
+  html:not(.tcg) .deck-slot:first-child .card {
+    animation: settle-back linear both; animation-timeline: view(); animation-range: exit 0% exit 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html:not(.tcg) .deck-slot + .deck-slot .card > :not(.sheen) { animation-name: fade-in; }
+    html:not(.tcg) .deck-slot:first-child .card { animation: none; }
+  }
 }

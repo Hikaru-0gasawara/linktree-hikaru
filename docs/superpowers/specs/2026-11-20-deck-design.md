@@ -72,3 +72,19 @@ Same frame, fonts, tokens and back art as Hikaru's card. Content, top to bottom:
 - Portfolio art is a screenshot of the live site's first screen.
 - In plain mode both cards look like today's page (no 3D, no frame), one section each.
 - The pile shows card backs; passed cards stay face up.
+
+## Revision 2 (owner feedback after the first deploy)
+
+Supersedes the matching parts of section 4 and adds plain-mode motion.
+
+**One face for the whole deck.** Every card in the deck (passed, current, pile) faces the same side. The pile lies face up under the current card. **Virar** in browse turns *all* cards over together (and back); **Resetar** in browse turns them all to the front. Only a focused card can show a different side.
+
+**Browse is a carousel, not a toy.** Outside focus mode no card can be dragged or rotated, on any device; links and buttons on the current card stay fully usable. Leafing is a complete, orchestrated motion: the current card slides left onto the passed stack (arc, tilt, darkening) while the card beneath swings out to the right from under it and comes to the centre; the rest of the pile shifts up one place, so the next card starts to show. The pile is visibly a pile: each card offset right/down and turned a degree or two more than the one above. The motion follows the native scroll through a critically damped spring (ω ≈ 11/s, ~0.5 s to settle), so even a quick snap plays the whole leaf, and a new scroll redirects it mid-flight. Reduced motion: no spring, no tilt or swing; positions follow scroll with the existing short fade.
+
+**Focus mode on every device.** Clicking or tapping the current card (not a link or button), or Enter/Space on its focused wrapper, enters focus: the card grows to the fit size, the others fade, paging locks, and the card can be dragged/arrow-keyed freely; **Virar**/**Resetar** then act on it alone. ✕, a click beside the card or Escape leave focus; the card turns back to the deck's face (500 ms, `--ease`).
+
+**Plain mode motion (scroll-driven, CSS only, where `animation-timeline: view()` is supported).** Found with the `find-animation-opportunities` gate:
+- Portfolio section: each block (art, title, type line, description, panel, links, footer) rises into place as it enters the viewport (`translateY(24px) scale(.98)`, opacity 0 → settled over `entry 0%–entry 100%`), which staggers them naturally by position. Purpose: preventing a jarring change (the section otherwise sits pre-animated below the fold). Frequency: once or twice per visit.
+- Hikaru's section, as it scrolls out: settles back (`scale(.95)`, opacity .4 over the `exit` range), so the next card reads as laid on top. Purpose: spatial consistency with the deck.
+- Reduced motion: opacity only for the portfolio blocks, nothing for the settle.
+- Rejected: parallax on the stars (decoration that competes with text), motion on the critter lane (already ambient), animating the language switch beyond its crossfade (tens of uses), any motion on link press beyond the existing scale(.97).
