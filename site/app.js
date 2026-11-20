@@ -57,7 +57,7 @@ function setMode(on) {
     for (const c of cards) { c.tabIndex = 0; c.setAttribute('role', 'group'); }
     labelCards(STRINGS[current]);
     // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
-    if (langEl.parentNode === front) flipBtn.after(langEl);
+    if (langEl.parentNode === front) resetBtn.after(langEl);
   } else {
     setFocus(false);
     for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);

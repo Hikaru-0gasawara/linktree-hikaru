@@ -78,7 +78,7 @@ body {
   flex-direction: column;
   justify-content: center;
   gap: var(--gap);
-  /* bottom clears the ground and the 58px critter lane */
+  /* bottom clears the ground and the critter lane (58px; only the 3x creeper's head reaches the lane's top 6px) */
   padding:
     calc(18px + env(safe-area-inset-top, 0px))
     calc(var(--pad) + env(safe-area-inset-right, 0px))
@@ -319,6 +319,8 @@ html.tcg .deck {
 /* slot = pose from deck.js (transform, opacity, z-index, --shade); .tcg-card inside = the user's rotation */
 html.tcg .deck-slot { display: block; position: absolute; inset: 0; transform-style: preserve-3d; }
 html.tcg .deck-slot[inert] { pointer-events: none; }
+/* before deck.js poses the slots (first paint), only the first card shows */
+html.tcg .deck-slot + .deck-slot { opacity: 0; }
 html.tcg .deck-slot::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: var(--ground); opacity: var(--shade, 0); clip-path: var(--cut);

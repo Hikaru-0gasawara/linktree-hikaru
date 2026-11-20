@@ -155,7 +155,6 @@ export function initCard(cardEl) {
       }
       write();
     },
-    isBusy: () => anim !== 0 || !!press?.moved,
   };
 }
 
