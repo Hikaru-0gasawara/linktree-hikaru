@@ -34,6 +34,7 @@
   --ground-h: 46px;
 }
 @media (min-height: 760px) { :root { --photo: 128px; } }
+@media (max-height: 700px) { :root { --photo: 76px; --gap: 5px; } }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -75,11 +76,13 @@ body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--gap);
+  /* bottom clears the ground and the critter lane (58px; only the 3x creeper's head reaches the lane's top 6px) */
   padding:
     calc(18px + env(safe-area-inset-top, 0px))
     calc(var(--pad) + env(safe-area-inset-right, 0px))
-    calc(var(--ground-h) + 6px + env(safe-area-inset-bottom, 0px))
+    calc(var(--ground-h) + 58px + env(safe-area-inset-bottom, 0px))
     calc(var(--pad) + env(safe-area-inset-left, 0px));
 }
 
@@ -142,13 +145,18 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
   font-stretch: 56%;
   font-variation-settings: 'wdth' 56;
   /* OGASAWARA is ~3.93em wide at wdth 56: fill the content width, capped for desktop */
-  font-size: min(calc((100vw - 2 * var(--pad)) / 4), 10.5svh, 90px);
+  font-size: min(calc((100vw - 2 * var(--pad)) / 4), 9svh, 90px);
   line-height: .86;
   letter-spacing: -.01em;
   text-align: center;
   white-space: nowrap;
 }
 .name span { display: block; }
+/* shorter screens: one line (HIKARU OGASAWARA is ~6.9em) so the card still fits one screen */
+@media (max-height: 799px) {
+  html:not(.tcg) h1.name { font-size: min(calc((100vw - 2 * var(--pad)) / 6.9), 7svh, 60px); }
+  html:not(.tcg) h1.name span { display: inline; }
+}
 
 .role { color: var(--muted); text-align: center; }
 
@@ -157,7 +165,17 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
   padding: 8px 14px;
   display: grid; grid-template-columns: auto 1fr; gap: 2px 12px;
 }
-.panel dt { color: var(--gold); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; line-height: 18px; }
+.panel dt, .label { color: var(--gold); font-size: 10px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; line-height: 18px; }
+
+.about p { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.chips li { padding: 0 5px; border: 1px solid var(--hair2); color: var(--muted); font-size: 10px; }
+
+/* portfolio card: the art window sits where the photo is, a rectangle, not a circle */
+.art { width: calc(var(--photo) * 1.6); height: var(--photo); margin: 0 auto 4px; flex: none; border: 1px solid var(--hair2); background: var(--raised); }
+.art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pf-title { font-size: min(calc((100vw - 2 * var(--pad)) / 9), 5.5svh, 48px); }
+:lang(ja) .pf-title { font-family: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif; font-weight: 800; font-size: min(calc((100vw - 2 * var(--pad)) / 11), 4.5svh, 36px); }
 
 .links { display: flex; flex-direction: column; gap: 8px; }
 .btn {
@@ -176,7 +194,7 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
   .lang button:not([aria-pressed="true"]):hover { color: var(--paper); }
 }
 
-.foot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; color: var(--dim); font-size: 10px; }
+.foot { display: flex; justify-content: space-between; gap: 12px; color: var(--dim); font-size: 10px; }
 .open { color: var(--jade); }
 
 /* ---- motion: transform + opacity only, nothing changes layout ---- */
@@ -208,8 +226,8 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 .btn.cta:active { background: var(--gold); filter: brightness(.92); }
 
 /* language crossfade: 75ms out, swap, 75ms in */
-[data-i18n], #ageSuffix { transition: opacity 75ms linear; }
-.swapping [data-i18n], .swapping #ageSuffix { opacity: 0; }
+[data-i18n], #ageSuffix, #skills { transition: opacity 75ms linear; }
+.swapping [data-i18n], .swapping #ageSuffix, .swapping #skills { opacity: 0; }
 
 /* available-dot pulse: pixel-stepped ring, starts after the entrance */
 .dot::after {
@@ -226,10 +244,10 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 }
 
 /* ---- TCG card mode (html.tcg). Off: the wrappers vanish and the page is the plain card ---- */
-.tcg-stage, .tcg-fit, .tcg-card { display: contents; }
-.face-back, .tcg-flip, .sheen { display: none; }
+.tcg-stage, .tcg-fit, .deck, .deck-slot, .tcg-card { display: contents; }
+.face-back, .tcg-flip, .tcg-reset, .sheen, .deck-stop, .deck-close { display: none; }
 
-.tcg-toggle, .tcg-flip {
+.tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
   min-height: 44px; padding: 0 10px; isolation: isolate;
   align-items: center; gap: 6px;
@@ -238,75 +256,122 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
   transition: transform 100ms ease-out;
 }
 .tcg-toggle { display: flex; left: max(8px, env(safe-area-inset-left, 0px)); width: 60px; justify-content: center; }
-.tcg-flip { left: calc(max(8px, env(safe-area-inset-left, 0px)) + 64px); }
+.tcg-flip { left: calc(max(8px, env(safe-area-inset-left, 0px)) + 64px); width: 60px; justify-content: center; }
+.tcg-reset { left: calc(max(8px, env(safe-area-inset-left, 0px)) + 128px); }
+/* focus mode's close, under the language switch */
+.deck-close { top: calc(max(8px, env(safe-area-inset-top, 0px)) + 44px); right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; justify-content: center; }
 /* visual segment is smaller than the 44px tap target, like .lang */
-.tcg-toggle::after, .tcg-flip::after { content: ''; position: absolute; inset: 11px 0; z-index: -1; border: 1px solid var(--hair2); }
+.tcg-toggle::after, .tcg-flip::after, .tcg-reset::after, .deck-close::after { content: ''; position: absolute; inset: 11px 0; z-index: -1; border: 1px solid var(--hair2); }
 .tcg-toggle::before { content: ''; width: 7px; height: 10px; border: 1px solid currentColor; flex: none; }
 html.tcg .tcg-toggle { color: var(--gold); }
 html.tcg .tcg-toggle::after { background: var(--raised); border-color: var(--gold); }
-.tcg-toggle:active, .tcg-flip:active { transform: scale(.97); }
+.tcg-toggle:active, .tcg-flip:active, .tcg-reset:active, .deck-close:active { transform: scale(.97); }
 @media (hover: hover) and (pointer: fine) {
-  html:not(.tcg) .tcg-toggle:hover, .tcg-flip:hover { color: var(--paper); }
+  html:not(.tcg) .tcg-toggle:hover, .tcg-flip:hover, .tcg-reset:hover { color: var(--paper); }
 }
 
 html.tcg, html.tcg body { overflow: hidden; height: 100%; }
-html.tcg .tcg-toggle, html.tcg .tcg-flip { position: fixed; }
-html.tcg .tcg-flip { display: flex; }
+html.tcg .tcg-toggle, html.tcg .tcg-flip, html.tcg .tcg-reset { position: fixed; }
+html.tcg .tcg-flip, html.tcg .tcg-reset { display: flex; }
+html.deck-focus .deck-close { display: flex; position: fixed; }
 /* app.js moves .lang out of the card (a transformed ancestor would trap position: fixed); hidden until then */
 html.tcg .card .lang { display: none; }
 html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
 
-/* the card sits between the 56px top bar and the 104px bottom reserve (ground + critter lane) */
+/* the deck's scroller, down on mouse, sideways on touch: a sticky stage, so wheel and swipe over the card scroll the track,
+   and one .deck-stop per card: the first is empty and sits at 0; the others follow the stage, each half the track and end-aligned,
+   so card k snaps at k half-tracks (a short wheel or swipe leafs) and stop: always keeps a fling from skipping a card */
+html.tcg .deck-track {
+  position: fixed; inset: 0; overflow: hidden auto; overscroll-behavior: contain;
+  scroll-snap-type: y mandatory; scrollbar-width: none;
+}
+html.tcg .deck-track::-webkit-scrollbar { display: none; }
+html.tcg .deck-stop { display: block; height: 50%; scroll-snap-align: end; scroll-snap-stop: always; }
+html.tcg .deck-stop:first-child { height: 0; scroll-snap-align: start; }
+/* the card sits between the 56px top bar and the 104px bottom reserve (ground + critter lane); clip keeps the pile from widening the scroll range */
 html.tcg .tcg-stage {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  position: fixed; inset: 56px 0 calc(104px + env(safe-area-inset-bottom, 0px)); perspective: 1200px;
+  position: sticky; top: 0; left: 0; height: 100%; overflow: clip;
+  padding: 56px 0 calc(104px + env(safe-area-inset-bottom, 0px));
+}
+@media (pointer: coarse) {
+  html.tcg .deck-track { display: flex; overflow: auto hidden; scroll-snap-type: x mandatory; }
+  html.tcg .tcg-stage { flex: none; width: 100%; }
+  html.tcg .deck-stop { flex: none; width: 50%; }
+  html.tcg .deck-stop:first-child { width: 0; }
 }
 html.tcg .tcg-fit {
   display: block; flex: none; width: 460px; height: 642px;
   transform: scale(var(--s, 1)); transform-style: preserve-3d;
   /* layout box = scaled box */
   margin: calc((var(--s, 1) - 1) * 321px) calc((var(--s, 1) - 1) * 230px);
-  animation: pop-fit 550ms var(--ease) both;
+  /* backwards, not both: a filling animation would block the focus-mode transform transition */
+  animation: pop-fit 550ms var(--ease) backwards;
 }
 @keyframes pop-fit { from { opacity: 0; transform: scale(calc(var(--s, 1) * .96)); } }
+/* the deck is flat: each slot is its own 3D scene, stacked by z-index, so a turning card never cuts through its neighbour */
+html.tcg .deck {
+  display: block; position: relative; height: 100%; perspective: 1200px;
+  --cut: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%,
+    8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
+}
+/* slot = pose from deck.js (transform, opacity, z-index, --shade); .tcg-card inside = the user's rotation */
+html.tcg .deck-slot { display: block; position: absolute; inset: 0; transform-style: preserve-3d; }
+html.tcg .deck-slot[inert] { pointer-events: none; }
+/* before deck.js poses the slots (first paint), only the first card shows */
+html.tcg .deck-slot + .deck-slot { opacity: 0; }
+html.tcg .deck-slot::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--ground); opacity: var(--shade, 0); clip-path: var(--cut);
+}
 html.tcg .tcg-card {
   display: block; position: relative; width: 100%; height: 100%;
   transform-style: preserve-3d; transform: var(--rot, rotate3d(0, 1, 0, 0deg));
   touch-action: none; cursor: grab;
 }
+/* touch browse: a horizontal swipe on the card scrolls the track (rotation is for focus mode) */
+@media (pointer: coarse) { html.tcg .tcg-card { touch-action: pan-x; } }
+/* focus mode (touch): the stage grows to the full fit size (app.js sets --s), the other cards fade away, the card rotates */
+html.tcg .tcg-fit { transition: transform 300ms var(--ease); }
+html.tcg .deck-slot { transition: opacity 300ms var(--ease); }
+html.deck-focus .deck-slot[inert] { opacity: 0 !important; } /* over the inline pose; inert already drops pointer events */
+html.deck-focus .tcg-card { touch-action: none; }
 
 /* faces: corners cut in 2 pixel steps of 4px */
 html.tcg .face-front, html.tcg .face-back {
   position: absolute; inset: 0;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
-  --cut: polygon(0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%,
-    8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
   clip-path: var(--cut);
 }
 
 /* front: gold face behind a 1px-inset panel layer with the same cut, so the border follows the steps */
-html.tcg main.card {
-  max-width: none; min-height: 0; height: 100%; margin: 0;
+html.tcg .card {
+  max-width: none; min-height: 0; height: 100%; margin: 0; justify-content: flex-start;
   padding: 18px 28px 20px;
   --photo: 116px; --gap: 8px;
   background: var(--gold); isolation: isolate;
 }
-html.tcg main.card::before, html.tcg main.card::after { content: ''; position: absolute; z-index: -1; pointer-events: none; }
-html.tcg main.card::before {
+html.tcg .card::before, html.tcg .card::after { content: ''; position: absolute; z-index: -1; pointer-events: none; }
+html.tcg .card::before {
   inset: 1px; clip-path: var(--cut);
   background:
     repeating-linear-gradient(90deg, var(--raised) 0 8px, var(--panel) 8px 16px) 0 100% / 100% 8px no-repeat,
     var(--panel);
 }
-html.tcg main.card::after {
+html.tcg .card::after {
   inset: 8px 8px 16px;
   background-image: radial-gradient(var(--paper) 1px, transparent 1.5px), radial-gradient(var(--muted) 1px, transparent 1.5px);
   background-size: 97px 83px, 151px 127px;
   background-position: 13px 21px, 61px 9px;
   opacity: .18;
 }
-html.tcg .name { font-size: 96px; }
+html.tcg .name { font-size: 48px; }
+/* the portfolio face has room for a bigger art window, like a TCG art box */
+html.tcg .art { width: 288px; height: 180px; }
+html.tcg .pf-title { font-size: 38px; }
+html.tcg:lang(ja) .pf-title { font-size: 30px; }
+html.tcg .foot { margin-top: auto; }
 html.tcg .sheen {
   display: block; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / .08) 50%, transparent 70%);
@@ -316,10 +381,10 @@ html.tcg .sheen {
 }
 html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
-/* critters walk in the lane above the ground; DOM order puts them over .ground and under .tcg-stage */
-.critters { display: none; }
-html.tcg .critters {
-  display: block; position: fixed; left: 0; right: 0; height: 58px; overflow: hidden; pointer-events: none;
+/* critters walk in the lane above the ground, in both modes; DOM order puts them over .ground and under
+   the page content (plain: the positioned .card, so text and links stay on top) and .tcg-stage */
+.critters {
+  position: fixed; left: 0; right: 0; height: 64px; overflow: hidden; pointer-events: none; /* 60px creeper at 3x */
   bottom: calc(var(--ground-h) + env(safe-area-inset-bottom, 0px));
 }
 .critter {
@@ -339,7 +404,7 @@ html.tcg .face-back img {
 
 .no-enter.tcg .tcg-fit { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  html.tcg .tcg-fit { animation: fade 200ms ease-out both; }
+  html.tcg .tcg-fit { animation: fade 200ms ease-out both; transition: none; }
   .no-enter.tcg .tcg-fit { animation: none; }
-  .tcg-toggle:active, .tcg-flip:active { transform: none; }
+  .tcg-toggle:active, .tcg-flip:active, .tcg-reset:active, .deck-close:active { transform: none; }
 }

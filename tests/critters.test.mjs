@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SPRITES } from '../site/critters.js';
+import { SPRITES, CAST } from '../site/critters.js';
 
 test('every sprite is well formed', () => {
   for (const [name, { palette, frames }] of Object.entries(SPRITES)) {
@@ -21,4 +21,13 @@ test('every sprite is well formed', () => {
 test('the cast is all there', () => {
   for (const k of ['cat', 'dog', 'horse', 'pig', 'chicken', 'pikachu', 'bulbasaur', 'charmander', 'squirtle', 'steve', 'toph'])
     assert.ok(k in SPRITES, k);
+  for (const k of CAST) assert.ok(k in SPRITES, `cast: ${k}`);
+});
+
+test('the cast has a Creeper and a Zombie, Steve-sized', () => {
+  for (const k of ['creeper', 'zombie']) {
+    assert.ok(CAST.includes(k), k);
+    const h = SPRITES[k].frames[0].length;
+    assert.ok(h >= 18 && h <= 22, `${k}: height ${h}`);
+  }
 });

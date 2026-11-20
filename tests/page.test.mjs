@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { STRINGS, resumeUrl } from '../site/i18n.js';
 
 const html = readFileSync(new URL('../site/index.html', import.meta.url), 'utf8');
@@ -75,4 +75,59 @@ test('mode class is set before paint', () => {
   const inline = [...head.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
   assert.ok(inline.includes("'tcg'"));
   assert.ok(inline.includes("matchMedia('(hover: hover) and (pointer: fine)')"));
+});
+
+const PLAY = 'https://hikaru-portfolio.okaru01.workers.dev/';
+const CODE = 'https://github.com/Hikaru-0gasawara/Portifolio';
+// each slot runs from its opening tag to the next one (the last to the end of the file)
+const slots = html.split('<div class="deck-slot"').slice(1);
+const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
+
+test('deck has a Hikaru and a portfolio slot, each a full card', () => {
+  assert.equal(slots.length, 2);
+  assert.ok(slot('hikaru') && slot('portfolio'));
+  for (const s of slots) {
+    assert.match(s, /class="tcg-card"/);
+    assert.match(s, /class="card face-front"/);
+    assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);
+  }
+  assert.equal([...html.matchAll(/<main\b/g)].length, 1);
+});
+
+test('Hikaru card has the four contact links and no Play', () => {
+  const s = slot('hikaru');
+  for (const href of ['mailto:hogasawara2311@outlook.com', 'https://www.linkedin.com/in/hikaru-ogasawara', 'https://github.com/Hikaru-0gasawara', '/resume/hikaru-pt.pdf']) {
+    assert.ok(s.includes(`href="${href}"`), `missing ${href}`);
+  }
+  assert.ok(!s.includes(PLAY));
+  assert.equal(html.split(`href="${PLAY}"`).length - 1, 1);
+});
+
+test('portfolio card has Play and the code link', () => {
+  const s = slot('portfolio');
+  for (const href of [PLAY, CODE]) assert.ok(s.includes(`href="${href}"`), `missing ${href}`);
+});
+
+test('portfolio art has alt, explicit size and stays small', () => {
+  const img = /<img\b[^>]*src="img\/portfolio\.webp"[^>]*>/.exec(slot('portfolio'))?.[0] ?? '';
+  assert.match(img, /alt="[^"]+"/);
+  assert.match(img, /width="\d+"/);
+  assert.match(img, /height="\d+"/);
+  const file = new URL('../site/img/portfolio.webp', import.meta.url);
+  assert.ok(existsSync(file), 'missing site/img/portfolio.webp');
+  assert.ok(statSync(file).size < 60 * 1024);
+});
+
+test('has the Reset button', () => {
+  const btn = /<button\b[^>]*class="tcg-reset"[^>]*>[\s\S]*?<\/button>/.exec(html)?.[0] ?? '';
+  assert.match(btn, /type="button"/);
+  assert.match(btn, /data-i18n="reset"/);
+});
+
+test('has the focus-mode close button, hidden by default', () => {
+  const btn = /<button\b[^>]*class="deck-close"[^>]*>/.exec(html)?.[0] ?? '';
+  assert.match(btn, /type="button"/);
+  assert.ok(btn.includes(`aria-label="${STRINGS.pt.close}"`), btn);
+  const css = readFileSync(new URL('../site/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /^[^{}\n]*\.deck-close[^{}\n]*\{ display: none; \}/m);
 });

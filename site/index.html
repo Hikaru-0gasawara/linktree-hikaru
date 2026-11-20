@@ -30,8 +30,8 @@ try { const v = localStorage.getItem('tcg'); if (v === '1' || v === '0') tcg = v
 if (tcg) try {
   const r = document.documentElement;
   r.classList.add('tcg');
-  // fit scale before first paint; app.js overrides it on .tcg-fit once loaded
-  r.style.setProperty('--s', Math.min((innerWidth - 32) / 460, (innerHeight - 160) / 642, 1.25));
+  // deck scale (deckScale in deck.js) before first paint; app.js overrides it on .tcg-fit once loaded
+  r.style.setProperty('--s', Math.min((innerWidth - 96) / 460, (innerHeight - 160) / 642, 1.1));
 } catch {}
 </script>
 <script type="module" src="app.js"></script>
@@ -39,11 +39,15 @@ if (tcg) try {
 <body>
 <button class="tcg-toggle" type="button" aria-pressed="false" aria-label="TCG: modo carta">TCG</button>
 <button class="tcg-flip" type="button"><span data-i18n="flip">Virar</span></button>
+<button class="tcg-reset" type="button"><span data-i18n="reset">Resetar</span></button>
+<button class="deck-close" type="button" aria-label="Fechar"><span aria-hidden="true">✕</span></button>
 <div class="stars enter-fade" aria-hidden="true"></div>
 <div class="ground enter-fade" aria-hidden="true"></div>
 <div class="critters" aria-hidden="true"></div>
-<div class="tcg-stage"><div class="tcg-fit"><div class="tcg-card">
-<main class="card face-front">
+<main class="deck-track">
+<div class="tcg-stage"><div class="tcg-fit"><div class="deck">
+<div class="deck-slot" data-card="hikaru"><div class="tcg-card">
+<article class="card face-front">
   <div class="lang enter-fade" role="group" aria-label="Idioma">
     <button type="button" data-lang="pt" aria-pressed="true">PT</button>
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -66,8 +70,13 @@ if (tcg) try {
     <dt data-i18n="baseLabel">Base</dt><dd data-i18n="base">São Paulo, BR</dd>
   </dl>
 
+  <div class="about enter-support">
+    <h2 class="label" data-i18n="aboutLabel">Sobre</h2>
+    <p data-i18n="about">Curioso desde criança, aprendo fazendo: monto, testo, meço e refaço até entender o porquê. Vice-presidente da Ycare, ONG que leva cestas básicas a uma comunidade todo mês.</p>
+    <ul class="chips" id="skills"><li>Calma sob pressão</li><li>Iniciativa</li><li>Trabalho em equipe</li><li>Liderança</li><li>Prazos</li></ul>
+  </div>
+
   <nav class="links enter-cta">
-    <a class="btn cta" href="https://hikaru-portfolio.okaru01.workers.dev/" target="_blank" rel="noopener"><span aria-hidden="true">▶</span> <span data-i18n="play">Play</span></a>
     <div class="grid">
       <a class="btn" href="mailto:hogasawara2311@outlook.com"><span class="ico" aria-hidden="true"></span><span data-i18n="email">E-mail</span></a>
       <a class="btn" href="https://www.linkedin.com/in/hikaru-ogasawara" target="_blank" rel="noopener"><span class="ico" aria-hidden="true"></span><span data-i18n="linkedin">LinkedIn</span></a>
@@ -78,8 +87,36 @@ if (tcg) try {
 
   <footer class="foot enter-fade"><span class="open"><span aria-hidden="true">● </span><span data-i18n="open">aberto a projetos</span></span><span>SP · BR</span></footer>
   <span class="sheen" aria-hidden="true"></span>
-</main>
+</article>
 <div class="face-back"><img src="img/card-back.webp" width="688" height="961" alt="" loading="lazy"></div>
+</div></div>
+<div class="deck-slot" data-card="portfolio"><div class="tcg-card">
+<article class="card face-front">
+  <div class="art enter-lead"><img src="img/portfolio.webp" width="576" height="360" alt="Primeira tela do portfólio: menu de idiomas em pixel art" loading="lazy"></div>
+
+  <h2 class="name pf-title enter-lead" data-i18n="pfTitle">PORTFÓLIO</h2>
+
+  <p class="role enter-support" data-i18n="pfType">Projeto — Web interativo</p>
+
+  <p class="desc enter-support" data-i18n="pfDesc">Portfólio em pixel art: um quarto explorável com projetos, laboratório, árvore de habilidades, minijogos, currículos e um atalho para recrutadores. Em PT, EN e JA.</p>
+
+  <dl class="panel enter-support">
+    <dt data-i18n="pfStackLabel">Stack</dt><dd data-i18n="pfStack">HTML · CSS · JS · WebGL</dd>
+    <dt data-i18n="pfHighlightsLabel">Destaques</dt><dd data-i18n="pfHighlights">TV 3D, boot, passagens secretas</dd>
+    <dt data-i18n="pfStatusLabel">Status</dt><dd data-i18n="pfStatus">no ar</dd>
+  </dl>
+
+  <nav class="links enter-cta">
+    <a class="btn cta" href="https://hikaru-portfolio.okaru01.workers.dev/" target="_blank" rel="noopener"><span aria-hidden="true">▶</span> <span data-i18n="play">Play</span></a>
+    <a class="btn" href="https://github.com/Hikaru-0gasawara/Portifolio" target="_blank" rel="noopener"><span class="ico" aria-hidden="true"></span><span data-i18n="pfCode">Código</span></a>
+  </nav>
+
+  <footer class="foot enter-fade"><span class="open"><span aria-hidden="true">● </span><span data-i18n="pfStatus">no ar</span></span><span>2026</span></footer>
+  <span class="sheen" aria-hidden="true"></span>
+</article>
+<div class="face-back"><img src="img/card-back.webp" width="688" height="961" alt="" loading="lazy"></div>
+</div></div>
 </div></div></div>
+</main>
 </body>
 </html>

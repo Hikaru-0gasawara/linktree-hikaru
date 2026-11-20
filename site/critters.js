@@ -1,4 +1,4 @@
-// Original pixel-art walkers for the ground in card mode. Side view, facing right, 2 walk frames.
+// Original pixel-art walkers for the ground, in both modes. Side view, facing right, 2 walk frames.
 // Each grid: one char per pixel, '.' transparent, other chars are palette keys.
 
 // frames share the top rows and differ in the leg rows
@@ -226,6 +226,64 @@ export const SPRITES = {
     '..gggg..',
   ]),
 
+  creeper: sprite({ g: '#5a9e4a', G: '#7cc06a', D: '#3a6e32', k: '#1a201a' }, [
+    'gGgDggGg',
+    'DggGgDgg',
+    'gGgkkgkk',
+    'gggkkgkk',
+    'gDggGkkg',
+    'ggGgkkkk',
+    'gGgDkkkk',
+    'gggGkgGk',
+    '..gDgG..',
+    '..GggD..',
+    '..gDgg..',
+    '..ggGg..',
+    '..DggG..',
+    '..gGDg..',
+    '..ggGg..',
+    '.gGggggG',
+  ], [
+    'Dgg..Dgg',
+    'Dgg..Dgg',
+    'DGg..DGg',
+    'DDD..DDD',
+  ], [
+    'ggD..ggD',
+    'ggD..ggD',
+    'GgD..GgD',
+    'DDD..DDD',
+  ]),
+
+  zombie: sprite({ z: '#3a6432', g: '#5e9a4e', k: '#16201a', m: '#2c4a26', c: '#3aa0a8', C: '#2a7880', p: '#4a3c94', P: '#30286a' }, [
+    '.zzzzzz...',
+    '.zzgzzg...',
+    '.zgggggg..',
+    '.zggkkg...',
+    '.zgggggg..',
+    '.zggmmg...',
+    '..cccc....',
+    '..ccCCCggg',
+    '..ccCCCggg',
+    '..cccc....',
+    '..cccc....',
+    '..pppp....',
+  ], [
+    '..pppp....',
+    '.pp..pp...',
+    '.pp..pp...',
+    'pp....pp..',
+    'pp....pp..',
+    'PP....PP..',
+  ], [
+    '..pppp....',
+    '..pppp....',
+    '..pppp....',
+    '..pppp....',
+    '..pppp....',
+    '..PPPP....',
+  ]),
+
   toph: sprite({ k: '#1e1c22', s: '#e0c0a0', e: '#b8b8b0', g: '#4a8a4a', G: '#2e5e34', y: '#c8b050', w: '#d8d0a0' }, [
     '....kk....',
     '...kkkk...',
@@ -269,7 +327,7 @@ export function renderSprite({ palette, frames }, scale) {
   return cv;
 }
 
-const CAST = ['cat', 'cat', 'dog', 'dog', 'pig', 'pig', 'chicken', 'chicken', 'horse', 'pikachu', 'bulbasaur', 'charmander', 'squirtle', 'steve', 'toph'];
+export const CAST = ['cat', 'cat', 'dog', 'dog', 'pig', 'pig', 'chicken', 'chicken', 'horse', 'pikachu', 'bulbasaur', 'charmander', 'squirtle', 'steve', 'creeper', 'zombie', 'toph'];
 const rand = (a, b) => a + Math.random() * (b - a);
 
 export function initCritters(container) {
@@ -309,21 +367,17 @@ export function initCritters(container) {
       c.x += c.dir * c.speed * dt;
       const max = Math.max(0, innerWidth - c.w);
       if (c.x <= 0 || c.x >= max) { c.x = Math.min(max, Math.max(0, c.x)); c.dir = c.x <= 0 ? 1 : -1; }
-      else if (Math.random() < dt * (c.jitter ? 0.4 : 0.08)) { c.wait = rand(1, 3); c.el.classList.add('stop'); }
+      else if (Math.random() < dt * (c.jitter ? 0.13 : 0.027)) { c.wait = rand(0.5, 1.5); c.el.classList.add('stop'); }
+      else if (Math.random() < dt / 11) c.dir = -c.dir; // a random turn-around about every 11 s
       place(c);
     }
     raf = requestAnimationFrame(tick);
   }
   const start = () => { cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(tick); };
-  const onVis = () => (document.hidden ? cancelAnimationFrame(raf) : start());
+  // a shrink must not leave a standing (or reduced-motion) critter off-screen
+  addEventListener('resize', () => walkers.forEach((c) => { c.x = Math.min(c.x, Math.max(0, innerWidth - c.w)); place(c); }));
   if (!still) {
-    document.addEventListener('visibilitychange', onVis);
+    document.addEventListener('visibilitychange', () => (document.hidden ? cancelAnimationFrame(raf) : start()));
     if (!document.hidden) start();
   }
-
-  return () => {
-    cancelAnimationFrame(raf);
-    document.removeEventListener('visibilitychange', onVis);
-    container.replaceChildren();
-  };
 }
