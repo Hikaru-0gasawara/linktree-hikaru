@@ -194,12 +194,18 @@ export function initDeck(track) {
       controllers[i].unwind(unwindWeight(i, p));
     });
     if (Math.round(p) !== cur) {
-      // focus inside the card that is going inert moves to the new current card's wrapper
-      const handOff = slots[cur]?.contains(document.activeElement);
+      // focus inside the card that is going inert moves to the new card: wrapper to wrapper, otherwise to its first
+      // link or button, which does not consume arrows, so ←/→ keep paging
+      const was = document.activeElement;
+      const handOff = slots[cur]?.contains(was);
       const first = cur < 0;
       cur = Math.round(p);
       slots.forEach((slot, i) => setInteractive(slot, i === cur));
-      if (handOff) slots[cur].querySelector('.tcg-card').focus({ preventScroll: true });
+      if (handOff) {
+        const card = slots[cur].querySelector('.tcg-card');
+        const to = was.classList.contains('tcg-card') ? card : card.querySelector('.face-front :is(a, button)') ?? card;
+        to.focus({ preventScroll: true });
+      }
       // reduced motion: no turn, the new arrangement fades in instead
       if (!first && reduced.matches) deck.animate({ opacity: [0, 1] }, { duration: 150, easing: 'ease-out' });
     }
