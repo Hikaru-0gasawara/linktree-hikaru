@@ -117,3 +117,9 @@ test('portfolio art has alt, explicit size and stays small', () => {
   assert.ok(existsSync(file), 'missing site/img/portfolio.webp');
   assert.ok(statSync(file).size < 60 * 1024);
 });
+
+test('has the Reset button', () => {
+  const btn = /<button\b[^>]*class="tcg-reset"[^>]*>[\s\S]*?<\/button>/.exec(html)?.[0] ?? '';
+  assert.match(btn, /type="button"/);
+  assert.match(btn, /data-i18n="reset"/);
+});

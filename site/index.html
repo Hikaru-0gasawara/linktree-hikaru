@@ -30,8 +30,8 @@ try { const v = localStorage.getItem('tcg'); if (v === '1' || v === '0') tcg = v
 if (tcg) try {
   const r = document.documentElement;
   r.classList.add('tcg');
-  // fit scale before first paint; app.js overrides it on .tcg-fit once loaded
-  r.style.setProperty('--s', Math.min((innerWidth - 32) / 460, (innerHeight - 160) / 642, 1.25));
+  // deck scale (deckScale in deck.js) before first paint; app.js overrides it on .tcg-fit once loaded
+  r.style.setProperty('--s', Math.min((innerWidth - 96) / 460, (innerHeight - 160) / 642, 1.1));
 } catch {}
 </script>
 <script type="module" src="app.js"></script>
@@ -39,10 +39,11 @@ if (tcg) try {
 <body>
 <button class="tcg-toggle" type="button" aria-pressed="false" aria-label="TCG: modo carta">TCG</button>
 <button class="tcg-flip" type="button"><span data-i18n="flip">Virar</span></button>
+<button class="tcg-reset" type="button"><span data-i18n="reset">Resetar</span></button>
 <div class="stars enter-fade" aria-hidden="true"></div>
 <div class="ground enter-fade" aria-hidden="true"></div>
 <div class="critters" aria-hidden="true"></div>
-<main>
+<main class="deck-track">
 <div class="tcg-stage"><div class="tcg-fit"><div class="deck">
 <div class="deck-slot" data-card="hikaru"><div class="tcg-card">
 <article class="card face-front">

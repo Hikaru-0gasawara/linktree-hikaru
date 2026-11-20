@@ -1,6 +1,7 @@
 import { STRINGS, BIRTH_DATE, ageOn, resumeUrl, loadLang, saveLang } from './i18n.js';
-import { saveTcg, fitScale } from './tcg.js';
-import { initCard } from './tcg-dom.js';
+import { saveTcg } from './tcg.js';
+import { deckScale } from './deck.js';
+import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
 
 let storage = null;
@@ -24,34 +25,37 @@ function apply(lang) {
   document.getElementById('ageSuffix').textContent = (lang === 'ja' ? '' : ' ') + s.ageSuffix;
   document.querySelector('meta[name="description"]').content = s.metaDescription;
   toggle.setAttribute('aria-label', s.tcgLabel);
-  if (root.classList.contains('tcg')) cardEl.setAttribute('aria-label', s.cardLabel);
+  if (root.classList.contains('tcg')) labelCards(s);
 }
+
+// Hikaru's card has its own label; project cards are named by their title
+const labelCards = (s) => { for (const c of cards) c.setAttribute('aria-label', c.parentNode.dataset.card === 'hikaru' ? s.cardLabel : c.querySelector('.name').textContent); };
 
 const root = document.documentElement;
 const toggle = document.querySelector('.tcg-toggle');
 const flipBtn = document.querySelector('.tcg-flip');
-const cardEl = document.querySelector('.tcg-card');
+const resetBtn = document.querySelector('.tcg-reset');
+const cards = [...document.querySelectorAll('.tcg-card')];
 const fit = document.querySelector('.tcg-fit');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
 let stopCritters = null;
 
-const fitNow = () => fit.style.setProperty('--s', fitScale(innerWidth, innerHeight));
+const fitNow = () => fit.style.setProperty('--s', deckScale(innerWidth, innerHeight));
 
 // the head script already chose the mode; this syncs the DOM to it
 function setMode(on) {
   root.classList.toggle('tcg', on);
   toggle.setAttribute('aria-pressed', on);
   if (on) {
-    cardEl.tabIndex = 0;
-    cardEl.setAttribute('role', 'group');
-    cardEl.setAttribute('aria-label', STRINGS[current].cardLabel);
+    for (const c of cards) { c.tabIndex = 0; c.setAttribute('role', 'group'); }
+    labelCards(STRINGS[current]);
     // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
     if (langEl.parentNode === front) flipBtn.after(langEl);
     stopCritters ??= initCritters(crittersEl);
   } else {
-    for (const a of ['tabindex', 'role', 'aria-label']) cardEl.removeAttribute(a);
+    for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);
     if (langEl.parentNode !== front) front.prepend(langEl);
     stopCritters?.();
     stopCritters = null;
@@ -62,7 +66,9 @@ function setMode(on) {
 let current = loadLang(storage, navigator.languages);
 apply(current);
 setMode(root.classList.contains('tcg'));
-initCard(cardEl, flipBtn);
+const deck = initDeck(document.querySelector('.deck-track'));
+flipBtn.addEventListener('click', () => deck.controllers[deck.current()]?.flip());
+resetBtn.addEventListener('click', () => deck.controllers[deck.current()]?.reset());
 toggle.addEventListener('click', () => {
   const on = !root.classList.contains('tcg');
   saveTcg(storage, on); // only an explicit choice is stored, so the pointer default keeps applying otherwise
