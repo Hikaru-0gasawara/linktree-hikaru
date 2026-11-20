@@ -240,6 +240,10 @@ export function initDeck(track) {
     current: () => cur,
     controllers,
     // focus mode: no paging; overflow hidden keeps the snap position
-    lockPaging(yes) { locked = yes; track.style.overflow = yes ? 'hidden' : ''; },
+    lockPaging(yes) {
+      // settle on the current stop first, so a tap during a snap never locks between cards
+      if (yes) track.scrollTo({ [coarse.matches ? 'left' : 'top']: cur * stopSize() });
+      locked = yes; track.style.overflow = yes ? 'hidden' : '';
+    },
   };
 }

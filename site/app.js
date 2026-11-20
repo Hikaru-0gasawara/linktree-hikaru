@@ -104,11 +104,11 @@ addEventListener('pointerup', (e) => {
 addEventListener('pointercancel', () => { tap = null; }); // the swipe became a leaf
 stage.addEventListener('click', (e) => { if (focused() && !cards[deck.current()].contains(e.target)) setFocus(false); });
 closeBtn.addEventListener('click', () => { setFocus(false); cards[deck.current()]?.focus({ preventScroll: true }); });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') setFocus(false); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && focused()) closeBtn.click(); });
 coarse.addEventListener('change', () => { if (!coarse.matches) setFocus(false); });
 
 let raf = 0;
-addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; fitNow(); }); });
+addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; fitNow(); if (focused()) deck.lockPaging(true); }); });
 
 // 75ms fade out, swap, 75ms fade in. A click mid-fade restarts the timer, which always clears the class.
 let timer;
