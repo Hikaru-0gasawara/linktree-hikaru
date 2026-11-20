@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { deckScale, progressFrom, poseFor, springStep } from '../site/deck.js';
+import { deckScale, progressFrom, poseFor, springStep, fanLayout, fanPose } from '../site/deck.js';
 
 function near(a, b, eps = 1e-9) {
   assert.ok(Math.abs(a - b) <= eps, `${a} != ${b}`);
@@ -80,3 +80,27 @@ test('progressFrom clamps to [0, n-1]', () => {
   near(progressFrom(-20, 1000, 2), 0);
 });
 
+
+test('fanPose: a hand of cards, symmetric, the middle one upright', () => {
+  const p = [0, 1, 2].map((i) => fanPose(i, 3, 0.5));
+  near(p[1].x, 0); near(p[1].rz, 0); near(p[1].y, 0);
+  near(p[0].x, -0.5); near(p[2].x, 0.5); near(p[0].rz, -p[2].rz); near(p[0].y, p[2].y);
+  assert.ok(p[2].rz > 0 && p[2].y > 0);
+});
+
+test('fanLayout: every corner of the open fan stays on screen, from a 320px phone to a desktop', () => {
+  for (const [vw, vh] of [[320, 568], [360, 640], [402, 874], [768, 1024], [1440, 900]]) {
+    const { s, spread } = fanLayout(vw, vh, 3);
+    assert.ok(s > 0 && s <= deckScale(vw, vh), `${vw}: scale ${s}`);
+    const W = 460 * s, H = 642 * s;
+    for (let i = 0; i < 3; i++) {
+      const { x, rz } = fanPose(i, 3, spread), a = rz * Math.PI / 180;
+      // corners relative to the bottom-centre pivot, turned, then moved to the card's place in the fan
+      for (const [cx, cy] of [[-W / 2, 0], [W / 2, 0], [-W / 2, -H], [W / 2, -H]]) {
+        const px = vw / 2 + x * W + cx * Math.cos(a) - cy * Math.sin(a);
+        assert.ok(px >= 0 && px <= vw, `${vw}: card ${i} corner at ${px.toFixed(1)}`);
+      }
+    }
+  }
+  assert.equal(fanLayout(1440, 900, 1).spread, 0);
+});

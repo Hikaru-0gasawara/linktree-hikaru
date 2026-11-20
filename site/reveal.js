@@ -26,6 +26,8 @@ export function initReveal(track) {
       writes.push([card, '--out', leaveAt(top, card.offsetHeight)]);
       if (i > 0) {
         writes.push([card, '--cin', clamp01((view - top) / (view * 0.6))]);
+        // a lazy image off to the side of a group's row only loads once scrolled into the row: load it as its card comes near
+        if (top < view * 1.5) for (const img of card.querySelectorAll('img[loading="lazy"]')) img.loading = 'eager';
         for (const el of card.children) if (!el.classList.contains('sheen')) writes.push([el, '--in', enterAt(top + el.offsetTop, el.offsetHeight, view)]);
       }
       for (const art of card.querySelectorAll('.art')) writes.push([art, '--par', driftAt(top + art.offsetTop, art.offsetHeight, view)]);

@@ -38,3 +38,21 @@ export function springStep(pos, vel, target, dt, omega) {
   const e = pos - target, k = Math.exp(-omega * dt), c = vel + omega * e;
   return [target + (e + c * dt) * k, (vel - omega * c * dt) * k];
 }
+
+// a card group's fan, like a hand of cards: neighbours sit `spread` card widths apart (tighter on phones) and each turns
+// fanTurn(spread) degrees more about its bottom edge
+export const fanTurn = (spread) => 7 * spread / 0.62;
+
+// the card scale that fits the open fan across the screen, counting the outer cards' turned top corners
+export function fanLayout(vw, vh, n) {
+  const spread = n > 1 ? (vw < 700 ? 0.3 : 0.62) : 0;
+  const t = fanTurn(spread) * (n - 1) / 2 * Math.PI / 180;
+  const width = (n - 1) * spread + 2 * (0.5 * Math.cos(t) + (642 / 460) * Math.sin(t)); // in card widths
+  return { s: Math.min(deckScale(vw, vh) * 0.86, (vw - 24) / (460 * width)), spread };
+}
+
+// card i of n in the open fan: x, y in card widths, rz in degrees; the middle card stands upright
+export function fanPose(i, n, spread) {
+  const k = i - (n - 1) / 2;
+  return { x: k * spread, y: 0.03 * k * k, rz: k * fanTurn(spread) };
+}

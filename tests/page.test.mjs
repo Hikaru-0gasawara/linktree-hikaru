@@ -84,13 +84,24 @@ const slots = html.split('<div class="deck-slot"').slice(1);
 const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
 
 test('deck: Hikaru first, then project cards, then the Magic-format cards, always last', () => {
-  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'mtg-hikaru']);
+  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'mtg-hikaru', 'grupo-1', 'grupo-2']);
   const mtg = slots.map((s) => s.includes('class="card face-front mtg"'));
   const first = mtg.indexOf(true);
   assert.ok(first > 0 && mtg.slice(first).every(Boolean), 'a Magic card before a project card');
+  const groups = slots.map((s) => s.startsWith(' data-card="grupo-') && / data-group>/.test(s));
+  const g = groups.indexOf(true);
+  assert.ok(g > first && groups.slice(g).every(Boolean), 'groups come after the single Magic cards');
   for (const s of slots) {
     assert.match(s, /class="tcg-card"/);
-    if (s.includes('face-front mtg')) {
+    if (/ data-group>/.test(s)) {
+      const items = s.split('<div class="fan-item"').slice(1);
+      assert.equal(items.length, 3);
+      items.forEach((it, i) => {
+        assert.ok(it.startsWith(` style="--i: ${i}"><div class="tcg-card" data-label="`), it.slice(0, 80));
+        assert.match(it, /class="card face-front mtg"/);
+        assert.match(it, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
+      });
+    } else if (s.includes('face-front mtg')) {
       assert.match(s, /data-label="mtgLabel"/);
       assert.match(s, /class="face-back mtg"><img src="img\/mtg-hikaru-back\.webp"/);
     } else {
@@ -103,7 +114,7 @@ test('deck: Hikaru first, then project cards, then the Magic-format cards, alway
 
 test('image alt texts are translated', () => {
   const keys = [...html.matchAll(/data-i18n-alt="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(keys.length, 2);
+  assert.equal(keys.length, 12);
   for (const k of keys) assert.ok(k in STRINGS.pt, `unknown key ${k}`);
 });
 

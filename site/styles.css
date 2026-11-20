@@ -253,8 +253,8 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 }
 
 /* ---- TCG card mode (html.tcg). Off: the wrappers vanish and the page is the plain card ---- */
-.tcg-stage, .tcg-fit, .deck, .deck-slot, .tcg-card { display: contents; }
-.face-back, .tcg-flip, .tcg-reset, .sheen, .deck-stop, .deck-close { display: none; }
+.tcg-stage, .tcg-fit, .deck, .deck-slot, .tcg-card, .fan-item { display: contents; }
+.face-back, .tcg-flip, .tcg-reset, .sheen, .deck-stop, .deck-close, .group-badge { display: none; }
 
 .tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
@@ -282,7 +282,7 @@ html.tcg .tcg-toggle::after { background: var(--raised); border-color: var(--gol
 html.tcg, html.tcg body { overflow: hidden; height: 100%; }
 html.tcg .tcg-toggle, html.tcg .tcg-flip, html.tcg .tcg-reset { position: fixed; }
 html.tcg .tcg-flip, html.tcg .tcg-reset { display: flex; }
-html.deck-focus .deck-close { display: flex; position: fixed; }
+html.deck-focus .deck-close, html.group-open .deck-close { display: flex; position: fixed; }
 /* app.js moves .lang out of the card (a transformed ancestor would trap position: fixed); hidden until then */
 html.tcg .card .lang { display: none; }
 html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
@@ -348,7 +348,7 @@ html.tcg .deck-slot { transition: opacity 300ms var(--ease); }
 html.deck-focus .deck-slot[inert] { opacity: 0 !important; } /* over the inline pose; inert already drops pointer events */
 html.deck-focus .tcg-card { touch-action: none; cursor: grab; }
 /* mouse: a sideways drag on the stage leafs (tcg-dom.js); while it runs the whole page shows the grabbing hand */
-@media (pointer: fine) { html.tcg:not(.deck-focus) .tcg-stage { cursor: grab; } }
+@media (pointer: fine) { html.tcg:not(.deck-focus):not(.group-open) .tcg-stage { cursor: grab; } }
 html.leafing, html.leafing * { cursor: grabbing !important; }
 
 /* faces: corners cut in 2 pixel steps of 4px */
@@ -414,6 +414,43 @@ html.tcg .face-back { display: block; background: var(--ground); transform: rota
 html.tcg .card.mtg { padding: 0; background: var(--ground); }
 html.tcg .card.mtg::before, html.tcg .card.mtg::after { content: none; }
 html.tcg .mtg-art, html.tcg .face-back.mtg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: 0; }
+/* card groups (tcg-dom.js, app.js). Closed: a pack, the first card on top and the others peeking out behind it. Open: a fan,
+   like a hand of cards, each card turned about its bottom edge (--fx/--fy/--fr from fanPose); a picked card comes to the middle.
+   The slot is flat and each card its own 3D scene, so z-index stacks them and a turning card never cuts through a neighbour. */
+html.tcg .deck-slot[data-group] { transform-style: flat; }
+html.tcg .fan-item {
+  display: block; position: absolute; inset: 0; perspective: 1200px; transform-origin: 50% 100%;
+  transform: translate(calc(var(--i) * 7px), calc(var(--i) * -7px)) rotate(calc(var(--i) * 2.5deg));
+  z-index: calc(10 - var(--i));
+  transition: transform 450ms cubic-bezier(.32, .72, 0, 1), opacity 250ms ease-out;
+}
+html.group-open .deck-slot.open .fan-item { transform: translate(var(--fx), var(--fy)) rotate(var(--fr)); z-index: calc(10 + var(--i)); }
+@media (hover: hover) and (pointer: fine) {
+  html.group-open:not(.deck-focus) .deck-slot.open .fan-item:hover { transform: translate(var(--fx), calc(var(--fy) - 4%)) rotate(var(--fr)); z-index: 30; }
+}
+html.group-open .deck-slot.open .fan-item.sel { transform: none; z-index: 40; }
+html.deck-focus .fan-item[inert] { opacity: 0; }
+html.group-open .deck-slot:not(.open) { opacity: 0 !important; } /* over the inline pose, like focus mode */
+/* the pack's count, a small chip on its top-right corner */
+html.tcg .group-badge {
+  display: block; position: absolute; z-index: 20; top: -10px; right: -14px; padding: 2px 7px;
+  background: var(--raised); border: 1px solid var(--hair2); color: var(--paper); font-size: 13px; letter-spacing: .04em;
+  transition: opacity 200ms ease-out;
+}
+html.group-open .group-badge { opacity: 0; }
+/* plain mode: a group is a row of its cards, side by side where they fit, swiped through on a phone */
+html:not(.tcg) .deck-slot[data-group] {
+  display: flex; align-items: center; justify-content: safe center; gap: 16px; min-height: 100%;
+  padding-inline: 16px; overflow: auto hidden; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+}
+html:not(.tcg) .deck-slot[data-group]::-webkit-scrollbar { display: none; }
+html:not(.tcg) .deck-slot[data-group] .card { flex: none; width: min(360px, 80vw); min-height: 0; margin: 0; padding: 18px 0 24px; scroll-snap-align: center; }
+/* phones: one card at a time, centred, with the next one peeking in so the row reads as swipeable */
+@media (max-width: 700px) {
+  html:not(.tcg) .deck-slot[data-group] { padding-inline: 14vw; }
+  html:not(.tcg) .deck-slot[data-group] .card { width: 72vw; }
+}
 /* plain mode: the printed front, as tall as the screen allows */
 html:not(.tcg) .mtg-art {
   display: block; margin: 0 auto; width: auto; max-width: 100%; height: auto;
