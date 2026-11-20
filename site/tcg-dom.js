@@ -1,4 +1,4 @@
-import { IDENTITY, applyDrag, quatToCss, slerp, flipTarget } from './tcg.js';
+import { IDENTITY, facingFront, applyDrag, quatToCss, slerp, flipTarget } from './tcg.js';
 
 const THRESHOLD = 6; // px before a press becomes a drag
 const FRAME = 1000 / 60; // 16.7ms
@@ -18,6 +18,7 @@ function cubicBezier(x1, y1, x2, y2) {
 const ease = cubicBezier(0.2, 0.7, 0.2, 1);
 
 export function initCard(cardEl, flipBtn) {
+  const front = cardEl.querySelector('.face-front');
   let q = IDENTITY;
   let anim = 0; // rAF id of the running inertia or flip
   let press = null; // { id, x, y, lastX, lastY, moved, samples }
@@ -25,6 +26,7 @@ export function initCard(cardEl, flipBtn) {
 
   function write() {
     cardEl.style.setProperty('--rot', quatToCss(q));
+    front.inert = !facingFront(q);
     // front normal (0,0,1) rotated by q
     const [x, y, z, w] = q;
     cardEl.style.setProperty('--sheen-x', (2 * (x * z + w * y)).toFixed(3));
@@ -74,7 +76,7 @@ export function initCard(cardEl, flipBtn) {
     let vy = recent.reduce((a, s) => a + s.dy, 0) / span * FRAME;
     let last = performance.now();
     const step = (now) => {
-      const frames = (now - last) / FRAME;
+      const frames = Math.min(Math.max((now - last) / FRAME, 0), 4);
       last = now;
       q = applyDrag(q, vx * frames, vy * frames);
       write();
@@ -114,7 +116,7 @@ export function initCard(cardEl, flipBtn) {
 
   const KEYS = { ArrowLeft: [-30, 0], ArrowRight: [30, 0], ArrowUp: [0, -30], ArrowDown: [0, 30] }; // 15° at 0.5°/px
   cardEl.addEventListener('keydown', (e) => {
-    if (!on() || e.target !== cardEl || !KEYS[e.key]) return;
+    if (!on() || e.target !== cardEl || !KEYS[e.key] || e.altKey || e.ctrlKey || e.metaKey) return;
     e.preventDefault();
     stop();
     q = applyDrag(q, ...KEYS[e.key]);
@@ -128,6 +130,7 @@ export function initCard(cardEl, flipBtn) {
     press = null;
     dragged = false;
     q = IDENTITY;
+    front.inert = false;
     cardEl.classList.remove('dragging');
     for (const p of ['--rot', '--sheen-x', '--sheen-y']) cardEl.style.removeProperty(p);
   }).observe(root, { attributes: true, attributeFilter: ['class'] });

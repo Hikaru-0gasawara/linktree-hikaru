@@ -242,11 +242,11 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 /* visual segment is smaller than the 44px tap target, like .lang */
 .tcg-toggle::after, .tcg-flip::after { content: ''; position: absolute; inset: 11px 0; z-index: -1; border: 1px solid var(--hair2); }
 .tcg-toggle::before { content: ''; width: 7px; height: 10px; border: 1px solid currentColor; flex: none; }
-.tcg-toggle[aria-pressed="true"] { color: var(--gold); }
-.tcg-toggle[aria-pressed="true"]::after { background: var(--raised); border-color: var(--gold); }
+html.tcg .tcg-toggle { color: var(--gold); }
+html.tcg .tcg-toggle::after { background: var(--raised); border-color: var(--gold); }
 .tcg-toggle:active, .tcg-flip:active { transform: scale(.97); }
 @media (hover: hover) and (pointer: fine) {
-  .tcg-toggle:not([aria-pressed="true"]):hover, .tcg-flip:hover { color: var(--paper); }
+  html:not(.tcg) .tcg-toggle:hover, .tcg-flip:hover { color: var(--paper); }
 }
 
 html.tcg, html.tcg body { overflow: hidden; height: 100%; }

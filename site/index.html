@@ -27,12 +27,17 @@ try { if (sessionStorage.entered) document.documentElement.classList.add('no-ent
 // card mode: stored choice wins, else on for fine-pointer hover devices
 let tcg = matchMedia('(hover: hover) and (pointer: fine)').matches;
 try { const v = localStorage.getItem('tcg'); if (v === '1' || v === '0') tcg = v === '1'; } catch {}
-if (tcg) document.documentElement.classList.add('tcg');
+if (tcg) try {
+  const r = document.documentElement;
+  r.classList.add('tcg');
+  // fit scale before first paint; app.js overrides it on .tcg-fit once loaded
+  r.style.setProperty('--s', Math.min((innerWidth - 32) / 460, (innerHeight - 160) / 642, 1.25));
+} catch {}
 </script>
 <script type="module" src="app.js"></script>
 </head>
 <body>
-<button class="tcg-toggle" type="button" aria-pressed="false" aria-label="Modo carta">TCG</button>
+<button class="tcg-toggle" type="button" aria-pressed="false" aria-label="TCG: modo carta">TCG</button>
 <button class="tcg-flip" type="button"><span data-i18n="flip">Virar</span></button>
 <div class="stars enter-fade" aria-hidden="true"></div>
 <div class="ground enter-fade" aria-hidden="true"></div>
