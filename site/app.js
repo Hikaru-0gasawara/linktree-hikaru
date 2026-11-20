@@ -1,5 +1,6 @@
 import { STRINGS, BIRTH_DATE, ageOn, resumeUrl, loadLang, saveLang } from './i18n.js';
 import { saveTcg, fitScale } from './tcg.js';
+import { initCard } from './tcg-dom.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -53,6 +54,7 @@ function setMode(on) {
 let current = loadLang(storage, navigator.languages);
 apply(current);
 setMode(root.classList.contains('tcg'));
+initCard(cardEl, flipBtn);
 toggle.addEventListener('click', () => {
   const on = !root.classList.contains('tcg');
   saveTcg(storage, on); // only an explicit choice is stored, so the pointer default keeps applying otherwise

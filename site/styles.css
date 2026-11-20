@@ -307,7 +307,14 @@ html.tcg main.card::after {
   opacity: .18;
 }
 html.tcg .name { font-size: 96px; }
-html.tcg .sheen { display: block; position: absolute; inset: 0; pointer-events: none; }
+html.tcg .sheen {
+  display: block; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / .08) 50%, transparent 70%);
+  background-size: 250% 250%;
+  /* --sheen-x/y: the rotated front normal (-1..1), written by tcg-dom.js */
+  background-position: calc((var(--sheen-x, 0) + 1) * 50%) calc((var(--sheen-y, 0) + 1) * 50%);
+}
+html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
 html.tcg .face-back { display: block; background: var(--ground); transform: rotateY(180deg); }
 html.tcg .face-back img {
