@@ -1,11 +1,12 @@
 import { IDENTITY, facingFront, applyDrag, quatToCss, slerp, flipTarget, CARD_W } from './tcg.js';
-import { progressFrom, poseFor, unwindWeight } from './deck.js';
+import { progressFrom, poseFor, springStep } from './deck.js';
 
 const THRESHOLD = 6; // px before a press becomes a drag
 const FRAME = 1000 / 60; // 16.7ms
 const root = document.documentElement;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const on = () => root.classList.contains('tcg');
+const focusMode = () => root.classList.contains('deck-focus');
 
 // CSS cubic-bezier(x1, y1, x2, y2) as t -> eased value, solved for x by bisection
 function cubicBezier(x1, y1, x2, y2) {
@@ -21,25 +22,23 @@ const ease = cubicBezier(0.2, 0.7, 0.2, 1);
 export function initCard(cardEl) {
   const front = cardEl.querySelector('.face-front');
   let q = IDENTITY;
-  let w = 0; // unwind weight: the shown orientation is q blended toward upright
   let anim = 0; // rAF id of the running inertia or flip
   let press = null; // { id, x, y, lastX, lastY, moved, samples }
   let dragged = false; // swallow the click that follows a drag
 
   function write() {
-    const shown = w > 0 ? slerp(q, IDENTITY, w) : q;
-    cardEl.style.setProperty('--rot', quatToCss(shown));
-    front.inert = !facingFront(shown);
-    // front normal (0,0,1) rotated by the shown orientation
-    const [x, y, z, r] = shown;
+    cardEl.style.setProperty('--rot', quatToCss(q));
+    front.inert = !facingFront(q);
+    // front normal (0,0,1) rotated by the orientation
+    const [x, y, z, r] = q;
     cardEl.style.setProperty('--sheen-x', (2 * (x * z + r * y)).toFixed(3));
     cardEl.style.setProperty('--sheen-y', (2 * (y * z - r * x)).toFixed(3));
   }
   const stop = () => { cancelAnimationFrame(anim); anim = 0; };
 
   cardEl.addEventListener('pointerdown', (e) => {
-    // touch rotates only in focus mode (html.deck-focus); in browse a swipe leafs the deck
-    if (!on() || press || (e.pointerType === 'mouse' && e.button !== 0) || (e.pointerType === 'touch' && !root.classList.contains('deck-focus'))) return;
+    // only a focused card rotates; in browse the deck is a carousel (a swipe or wheel leafs it)
+    if (!on() || !focusMode() || press || (e.pointerType === 'mouse' && e.button !== 0)) return;
     stop();
     dragged = false;
     press = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, moved: false, samples: [] };
@@ -120,7 +119,7 @@ export function initCard(cardEl) {
 
   const KEYS = { ArrowLeft: [-30, 0], ArrowRight: [30, 0], ArrowUp: [0, -30], ArrowDown: [0, 30] }; // 15° at 0.5°/px
   cardEl.addEventListener('keydown', (e) => {
-    if (!on() || e.target !== cardEl || !KEYS[e.key] || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!on() || !focusMode() || e.target !== cardEl || !KEYS[e.key] || e.altKey || e.ctrlKey || e.metaKey) return;
     e.preventDefault();
     stop();
     q = applyDrag(q, ...KEYS[e.key]);
@@ -134,7 +133,6 @@ export function initCard(cardEl) {
     press = null;
     dragged = false;
     q = IDENTITY;
-    w = 0;
     front.inert = false;
     cardEl.classList.remove('dragging');
     for (const p of ['--rot', '--sheen-x', '--sheen-y']) cardEl.style.removeProperty(p);
@@ -143,33 +141,25 @@ export function initCard(cardEl) {
   return {
     flip: () => turnTo(flipTarget(q)),
     reset: () => turnTo(IDENTITY),
-    // off-centre the card shows its rotation blended away; once fully off-centre it forgets it
-    unwind(weight) {
-      if (weight === w) return; // idle cards: nothing to rewrite
-      w = weight;
-      if (w >= 1) {
-        stop();
-        press = null;
-        cardEl.classList.remove('dragging');
-        q = IDENTITY;
-      }
-      write();
-    },
+    turnTo,
   };
 }
 
 // inert also drops pointer events (CSS: .deck-slot[inert])
 export const setInteractive = (el, yes) => { el.closest('.deck-slot').inert = !yes; };
 
+const OMEGA = 11; // spring stiffness (1/s): critically damped, a leaf settles in about half a second
 const PAGE = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1, Home: -Infinity, End: Infinity };
 
-// card mode: the track's native scroll (snap, one stop per card) is the deck's only clock
+// card mode: the track's native scroll (snap, one stop per card) sets the target; the shown progress follows it on a spring,
+// so even a quick snap plays the whole leaf and a new scroll redirects it mid-flight
 export function initDeck(track) {
   const slots = [...track.querySelectorAll('.deck-slot')];
   const n = slots.length;
   const controllers = slots.map((s) => initCard(s.querySelector('.tcg-card')));
   const coarse = matchMedia('(pointer: coarse)'); // touch leafs sideways; mouse and trackpad scroll down
   let cur = -1, raf = 0, locked = false, wasOn = null;
+  let target = 0, shown = 0, vel = 0, last = 0;
   const deck = track.querySelector('.deck');
   // snap stops: an empty one at 0 (the sticky stage cannot snap: its position moves with the scroll), then one per further card,
   // each half the track (CSS), so a short wheel or swipe leafs one card
@@ -178,19 +168,25 @@ export function initDeck(track) {
   for (let i = 1; i < n; i++) track.append(stop());
   const stopSize = () => (coarse.matches ? track.clientWidth : track.clientHeight) / 2;
 
-  function update() {
+  function update(now) {
     raf = 0;
     const size = stopSize();
     if (!on() || size <= 0) return; // hidden or not laid out yet
-    let p = progressFrom(coarse.matches ? track.scrollLeft : track.scrollTop, size, n);
-    if (Math.abs(p - Math.round(p)) < 1e-3) p = Math.round(p); // sub-pixel snap offsets count as the stop
+    target = progressFrom(coarse.matches ? track.scrollLeft : track.scrollTop, size, n);
+    if (Math.abs(target - Math.round(target)) < 1e-3) target = Math.round(target); // sub-pixel snap offsets count as the stop
+    const dt = last ? Math.min((now - last) / 1000, 0.05) : 1 / 60;
+    if (reduced.matches || cur < 0) [shown, vel] = [target, 0];
+    else [shown, vel] = springStep(shown, vel, target, dt, OMEGA);
+    if (Math.abs(shown - target) < 1e-4 && Math.abs(vel) < 1e-3) [shown, vel] = [target, 0];
+    last = shown === target ? 0 : now;
+    if (last) raf = requestAnimationFrame(update);
+    const p = shown;
     slots.forEach((slot, i) => {
-      const { x, y, s, rz, ry, shade, z, opacity } = poseFor(i, p, reduced.matches);
-      slot.style.transform = `translate3d(${x * CARD_W}px, ${y * CARD_W}px, 0) rotateZ(${rz}deg) rotateY(${ry}deg) scale(${s})`;
+      const { x, y, s, rz, shade, z, opacity } = poseFor(i, p, reduced.matches);
+      slot.style.transform = `translate3d(${x * CARD_W}px, ${y * CARD_W}px, 0) rotateZ(${rz}deg) scale(${s})`;
       slot.style.zIndex = z;
       slot.style.opacity = opacity;
       slot.style.setProperty('--shade', shade);
-      controllers[i].unwind(unwindWeight(i, p));
     });
     if (Math.round(p) !== cur) {
       // focus inside the card that is going inert moves to the new card: wrapper to wrapper, otherwise to its first
@@ -221,6 +217,7 @@ export function initDeck(track) {
     track.style.overflow = '';
     track.scrollTo(0, 0);
     cur = -1;
+    target = shown = vel = last = 0;
     if (wasOn) schedule();
     else for (const slot of slots) { slot.inert = false; slot.removeAttribute('style'); }
   };
@@ -231,7 +228,7 @@ export function initDeck(track) {
     // defaultPrevented: a focused card wrapper already used the arrow to rotate
     if (!on() || locked || cur < 0 || e.defaultPrevented || !(e.key in PAGE) || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     e.preventDefault();
-    const to = Math.min(Math.max(cur + PAGE[e.key], 0), n - 1) * stopSize();
+    const to = Math.min(Math.max(Math.round(target) + PAGE[e.key], 0), n - 1) * stopSize();
     track.scrollTo({ [coarse.matches ? 'left' : 'top']: to, behavior: 'smooth' });
   });
 
@@ -241,7 +238,7 @@ export function initDeck(track) {
     // focus mode: no paging; overflow hidden keeps the snap position
     lockPaging(yes) {
       // settle on the current stop first, so a tap during a snap never locks between cards
-      if (yes) track.scrollTo({ [coarse.matches ? 'left' : 'top']: cur * stopSize() });
+      if (yes) track.scrollTo({ [coarse.matches ? 'left' : 'top']: Math.round(shown) * stopSize() });
       locked = yes; track.style.overflow = yes ? 'hidden' : '';
     },
   };

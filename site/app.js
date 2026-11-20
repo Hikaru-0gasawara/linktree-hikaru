@@ -1,5 +1,5 @@
 import { STRINGS, BIRTH_DATE, ageOn, resumeUrl, loadLang, saveLang } from './i18n.js';
-import { saveTcg, fitScale } from './tcg.js';
+import { saveTcg, fitScale, IDENTITY } from './tcg.js';
 import { deckScale } from './deck.js';
 import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
@@ -43,10 +43,12 @@ const stage = document.querySelector('.tcg-stage');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
-const coarse = matchMedia('(pointer: coarse)');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
 const focused = () => root.classList.contains('deck-focus');
+// the whole deck shows one face; only a focused card turns on its own
+let back = false;
+const deckFace = () => (back ? [0, 1, 0, 0] : IDENTITY); // 180° about Y
 const fitNow = () => fit.style.setProperty('--s', (focused() ? fitScale : deckScale)(innerWidth, innerHeight));
 
 // the head script already chose the mode; this syncs the DOM to it
@@ -60,6 +62,7 @@ function setMode(on) {
     if (langEl.parentNode === front) resetBtn.after(langEl);
   } else {
     setFocus(false);
+    back = false;
     for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);
     if (langEl.parentNode !== front) front.prepend(langEl);
   }
@@ -71,18 +74,20 @@ apply(current);
 setMode(root.classList.contains('tcg'));
 initCritters(crittersEl); // once, for both modes
 const deck = initDeck(document.querySelector('.deck-track'));
-flipBtn.addEventListener('click', () => deck.controllers[deck.current()]?.flip());
-resetBtn.addEventListener('click', () => deck.controllers[deck.current()]?.reset());
+const turnAll = () => { for (const c of deck.controllers) c.turnTo(deckFace()); };
+flipBtn.addEventListener('click', () => { if (focused()) deck.controllers[deck.current()]?.flip(); else { back = !back; turnAll(); } });
+resetBtn.addEventListener('click', () => { if (focused()) deck.controllers[deck.current()]?.reset(); else { back = false; turnAll(); } });
 toggle.addEventListener('click', () => {
   const on = !root.classList.contains('tcg');
   saveTcg(storage, on); // only an explicit choice is stored, so the pointer default keeps applying otherwise
   setMode(on);
 });
 
-// touch focus mode: a tap on the current card grows it to the full fit size, fades the others and lets a drag rotate it;
-// ✕, a tap on the stage beside the card, Escape, leaving card mode or a switch to a fine pointer leave it
+// focus mode: a click or tap on the current card (or Enter/Space on it) grows it to the full fit size, fades the others and
+// lets a drag rotate it; ✕, a click beside the card, Escape or leaving card mode turn it back to the deck's face and leave
 function setFocus(yes) {
   if (yes === focused()) return;
+  if (!yes) deck.controllers[deck.current()]?.turnTo(deckFace());
   root.classList.toggle('deck-focus', yes);
   deck.lockPaging(yes);
   fitNow();
@@ -91,7 +96,7 @@ function setFocus(yes) {
 }
 let tap = null; // a press on the current card that may still be a tap (< 6px); links and buttons keep their own tap
 stage.addEventListener('pointerdown', (e) => {
-  const ok = coarse.matches && root.classList.contains('tcg') && !focused() && cards[deck.current()]?.contains(e.target) && !e.target.closest('a, button');
+  const ok = root.classList.contains('tcg') && !focused() && e.button === 0 && cards[deck.current()]?.contains(e.target) && !e.target.closest('a, button');
   tap = ok ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
 });
 addEventListener('pointerup', (e) => {
@@ -102,7 +107,9 @@ addEventListener('pointercancel', () => { tap = null; }); // the swipe became a 
 stage.addEventListener('click', (e) => { if (focused() && !cards[deck.current()].contains(e.target)) setFocus(false); });
 closeBtn.addEventListener('click', () => { setFocus(false); cards[deck.current()]?.focus({ preventScroll: true }); });
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && focused()) closeBtn.click(); });
-coarse.addEventListener('change', () => { if (!coarse.matches) setFocus(false); });
+addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !focused() && e.target === cards[deck.current()]) { e.preventDefault(); setFocus(true); }
+});
 
 let raf = 0;
 addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; fitNow(); if (focused()) deck.lockPaging(true); }); });
