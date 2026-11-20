@@ -1,5 +1,5 @@
 import { STRINGS, BIRTH_DATE, ageOn, resumeUrl, loadLang, saveLang } from './i18n.js';
-import { saveTcg } from './tcg.js';
+import { saveTcg, fitScale } from './tcg.js';
 import { deckScale } from './deck.js';
 import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
@@ -25,6 +25,7 @@ function apply(lang) {
   document.getElementById('ageSuffix').textContent = (lang === 'ja' ? '' : ' ') + s.ageSuffix;
   document.querySelector('meta[name="description"]').content = s.metaDescription;
   toggle.setAttribute('aria-label', s.tcgLabel);
+  closeBtn.setAttribute('aria-label', s.close);
   if (root.classList.contains('tcg')) labelCards(s);
 }
 
@@ -35,14 +36,19 @@ const root = document.documentElement;
 const toggle = document.querySelector('.tcg-toggle');
 const flipBtn = document.querySelector('.tcg-flip');
 const resetBtn = document.querySelector('.tcg-reset');
+const closeBtn = document.querySelector('.deck-close');
 const cards = [...document.querySelectorAll('.tcg-card')];
 const fit = document.querySelector('.tcg-fit');
+const stage = document.querySelector('.tcg-stage');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
+const coarse = matchMedia('(pointer: coarse)');
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let stopCritters = null;
 
-const fitNow = () => fit.style.setProperty('--s', deckScale(innerWidth, innerHeight));
+const focused = () => root.classList.contains('deck-focus');
+const fitNow = () => fit.style.setProperty('--s', (focused() ? fitScale : deckScale)(innerWidth, innerHeight));
 
 // the head script already chose the mode; this syncs the DOM to it
 function setMode(on) {
@@ -55,6 +61,7 @@ function setMode(on) {
     if (langEl.parentNode === front) flipBtn.after(langEl);
     stopCritters ??= initCritters(crittersEl);
   } else {
+    setFocus(false);
     for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);
     if (langEl.parentNode !== front) front.prepend(langEl);
     stopCritters?.();
@@ -74,6 +81,32 @@ toggle.addEventListener('click', () => {
   saveTcg(storage, on); // only an explicit choice is stored, so the pointer default keeps applying otherwise
   setMode(on);
 });
+
+// touch focus mode: a tap on the current card grows it to the full fit size, fades the others and lets a drag rotate it;
+// ✕, a tap on the stage beside the card, Escape, leaving card mode or a switch to a fine pointer leave it
+function setFocus(yes) {
+  if (yes === focused()) return;
+  root.classList.toggle('deck-focus', yes);
+  deck.lockPaging(yes);
+  fitNow();
+  // reduced motion: no growth, the new size fades in
+  if (reduced.matches) fit.animate({ opacity: [0, 1] }, { duration: 150, easing: 'ease-out' });
+}
+let tap = null; // a press on the current card that may still be a tap (< 6px); links and buttons keep their own tap
+stage.addEventListener('pointerdown', (e) => {
+  const ok = coarse.matches && root.classList.contains('tcg') && !focused() && cards[deck.current()]?.contains(e.target) && !e.target.closest('a, button');
+  tap = ok ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+});
+addEventListener('pointerup', (e) => {
+  if (tap?.id === e.pointerId && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 6) setFocus(true);
+  tap = null;
+});
+addEventListener('pointercancel', () => { tap = null; }); // the swipe became a leaf
+stage.addEventListener('click', (e) => { if (focused() && !cards[deck.current()].contains(e.target)) setFocus(false); });
+closeBtn.addEventListener('click', () => { setFocus(false); cards[deck.current()]?.focus({ preventScroll: true }); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') setFocus(false); });
+coarse.addEventListener('change', () => { if (!coarse.matches) setFocus(false); });
+
 let raf = 0;
 addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; fitNow(); }); });
 

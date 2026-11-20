@@ -245,9 +245,9 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 
 /* ---- TCG card mode (html.tcg). Off: the wrappers vanish and the page is the plain card ---- */
 .tcg-stage, .tcg-fit, .deck, .deck-slot, .tcg-card { display: contents; }
-.face-back, .tcg-flip, .tcg-reset, .sheen, .deck-stop { display: none; }
+.face-back, .tcg-flip, .tcg-reset, .sheen, .deck-stop, .deck-close { display: none; }
 
-.tcg-toggle, .tcg-flip, .tcg-reset {
+.tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
   min-height: 44px; padding: 0 10px; isolation: isolate;
   align-items: center; gap: 6px;
@@ -258,12 +258,14 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 .tcg-toggle { display: flex; left: max(8px, env(safe-area-inset-left, 0px)); width: 60px; justify-content: center; }
 .tcg-flip { left: calc(max(8px, env(safe-area-inset-left, 0px)) + 64px); width: 60px; justify-content: center; }
 .tcg-reset { left: calc(max(8px, env(safe-area-inset-left, 0px)) + 128px); }
+/* focus mode's close, under the language switch */
+.deck-close { top: calc(max(8px, env(safe-area-inset-top, 0px)) + 44px); right: max(8px, env(safe-area-inset-right, 0px)); width: 44px; justify-content: center; }
 /* visual segment is smaller than the 44px tap target, like .lang */
-.tcg-toggle::after, .tcg-flip::after, .tcg-reset::after { content: ''; position: absolute; inset: 11px 0; z-index: -1; border: 1px solid var(--hair2); }
+.tcg-toggle::after, .tcg-flip::after, .tcg-reset::after, .deck-close::after { content: ''; position: absolute; inset: 11px 0; z-index: -1; border: 1px solid var(--hair2); }
 .tcg-toggle::before { content: ''; width: 7px; height: 10px; border: 1px solid currentColor; flex: none; }
 html.tcg .tcg-toggle { color: var(--gold); }
 html.tcg .tcg-toggle::after { background: var(--raised); border-color: var(--gold); }
-.tcg-toggle:active, .tcg-flip:active, .tcg-reset:active { transform: scale(.97); }
+.tcg-toggle:active, .tcg-flip:active, .tcg-reset:active, .deck-close:active { transform: scale(.97); }
 @media (hover: hover) and (pointer: fine) {
   html:not(.tcg) .tcg-toggle:hover, .tcg-flip:hover, .tcg-reset:hover { color: var(--paper); }
 }
@@ -271,6 +273,7 @@ html.tcg .tcg-toggle::after { background: var(--raised); border-color: var(--gol
 html.tcg, html.tcg body { overflow: hidden; height: 100%; }
 html.tcg .tcg-toggle, html.tcg .tcg-flip, html.tcg .tcg-reset { position: fixed; }
 html.tcg .tcg-flip, html.tcg .tcg-reset { display: flex; }
+html.deck-focus .deck-close { display: flex; position: fixed; }
 /* app.js moves .lang out of the card (a transformed ancestor would trap position: fixed); hidden until then */
 html.tcg .card .lang { display: none; }
 html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
@@ -302,7 +305,8 @@ html.tcg .tcg-fit {
   transform: scale(var(--s, 1)); transform-style: preserve-3d;
   /* layout box = scaled box */
   margin: calc((var(--s, 1) - 1) * 321px) calc((var(--s, 1) - 1) * 230px);
-  animation: pop-fit 550ms var(--ease) both;
+  /* backwards, not both: a filling animation would block the focus-mode transform transition */
+  animation: pop-fit 550ms var(--ease) backwards;
 }
 @keyframes pop-fit { from { opacity: 0; transform: scale(calc(var(--s, 1) * .96)); } }
 /* the deck is flat: each slot is its own 3D scene, stacked by z-index, so a turning card never cuts through its neighbour */
@@ -326,6 +330,11 @@ html.tcg .tcg-card {
 }
 /* touch browse: a horizontal swipe on the card scrolls the track (rotation is for focus mode) */
 @media (pointer: coarse) { html.tcg .tcg-card { touch-action: pan-x; } }
+/* focus mode (touch): the stage grows to the full fit size (app.js sets --s), the other cards fade away, the card rotates */
+html.tcg .tcg-fit { transition: transform 300ms var(--ease); }
+html.tcg .deck-slot { transition: opacity 300ms var(--ease); }
+html.deck-focus .deck-slot[inert] { opacity: 0 !important; } /* over the inline pose; inert already drops pointer events */
+html.deck-focus .tcg-card { touch-action: none; }
 
 /* faces: corners cut in 2 pixel steps of 4px */
 html.tcg .face-front, html.tcg .face-back {
@@ -393,7 +402,7 @@ html.tcg .face-back img {
 
 .no-enter.tcg .tcg-fit { animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  html.tcg .tcg-fit { animation: fade 200ms ease-out both; }
+  html.tcg .tcg-fit { animation: fade 200ms ease-out both; transition: none; }
   .no-enter.tcg .tcg-fit { animation: none; }
-  .tcg-toggle:active, .tcg-flip:active, .tcg-reset:active { transform: none; }
+  .tcg-toggle:active, .tcg-flip:active, .tcg-reset:active, .deck-close:active { transform: none; }
 }

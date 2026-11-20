@@ -123,3 +123,11 @@ test('has the Reset button', () => {
   assert.match(btn, /type="button"/);
   assert.match(btn, /data-i18n="reset"/);
 });
+
+test('has the focus-mode close button, hidden by default', () => {
+  const btn = /<button\b[^>]*class="deck-close"[^>]*>/.exec(html)?.[0] ?? '';
+  assert.match(btn, /type="button"/);
+  assert.ok(btn.includes(`aria-label="${STRINGS.pt.close}"`), btn);
+  const css = readFileSync(new URL('../site/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /^[^{}\n]*\.deck-close[^{}\n]*\{ display: none; \}/m);
+});
