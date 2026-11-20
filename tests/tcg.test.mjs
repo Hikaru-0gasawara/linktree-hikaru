@@ -36,7 +36,7 @@ test('saveTcg ignores errors and round-trips', () => {
 });
 
 test('fitScale', () => {
-  near(fitScale(1440, 900), 780 / 642);
+  near(fitScale(1440, 900), 740 / 642);
   near(fitScale(390, 844), 358 / 460);
   near(fitScale(4000, 4000), 1.25);
 });

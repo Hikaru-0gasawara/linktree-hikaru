@@ -16,7 +16,7 @@ export function saveTcg(storage, on) {
   try { storage.setItem('tcg', on ? '1' : '0'); } catch {}
 }
 
-export const fitScale = (vw, vh) => Math.min((vw - 32) / CARD_W, (vh - 120) / CARD_H, 1.25);
+export const fitScale = (vw, vh) => Math.min((vw - 32) / CARD_W, (vh - 160) / CARD_H, 1.25);
 
 export function quatMul([ax, ay, az, aw], [bx, by, bz, bw]) {
   return [
