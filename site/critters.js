@@ -343,39 +343,42 @@ export function initCritters(container) {
     el.style.cssText = `width:${w}px;height:${h}px;background-image:url(${sheets[name]});background-size:${w * n}px ${h}px;`
       + `--sw:${w * n}px;--n:${n};animation-duration:${Math.max(0.25, 16 / speed).toFixed(2)}s`;
     container.append(el);
-    const c = { el, w, speed, base: speed, x: rand(0, Math.max(0, innerWidth - w)), dir: Math.random() < 0.5 ? 1 : -1, wait: 0, jitter: name === 'chicken' };
-    place(c);
+    const c = { el, w, speed, x: rand(0, Math.max(0, innerWidth - w)), dir: Math.random() < 0.5 ? 1 : -1, jitter: name === 'chicken', walk: null, timer: 0 };
     return c;
   });
 
-  function place(c) { c.el.style.transform = `translateX(${c.x.toFixed(1)}px) scaleX(${c.dir})`; }
-
-  let raf = 0, last = 0;
-  function tick(t) {
-    const dt = Math.min((t - last) / 1000, 0.1);
-    last = t;
-    for (const c of walkers) {
-      if (c.wait > 0) {
-        if ((c.wait -= dt) <= 0) c.el.classList.remove('stop');
-        continue;
+  // each stretch of a walk is one Web Animation of transform, which the compositor runs off the main thread; JS only picks
+  // the next stretch when one ends: walk on, turn round (about every 11 s, and at the edges), or stand still for a moment
+  const pose = (x, dir) => `translateX(${x.toFixed(1)}px) scaleX(${dir})`;
+  const chance = (rate, secs) => Math.random() < 1 - Math.exp(-rate * secs);
+  function next(c) {
+    const max = Math.max(0, innerWidth - c.w);
+    c.x = Math.min(Math.max(c.x, 0), max);
+    if (!max) { c.el.style.transform = pose(0, c.dir); return; } // no room to walk: it just stands
+    if (c.jitter) { c.speed = rand(20, 50); if (Math.random() < 0.3) c.dir = -c.dir; } // a chicken changes pace every half second
+    if (c.x <= 0) c.dir = 1; else if (c.x >= max) c.dir = -1;
+    const room = c.dir > 0 ? max - c.x : c.x;
+    const secs = Math.min(c.jitter ? rand(0.2, 0.8) : rand(2, 8), room / c.speed);
+    const to = c.x + c.dir * c.speed * secs;
+    c.el.classList.remove('stop');
+    c.walk = c.el.animate([{ transform: pose(c.x, c.dir) }, { transform: pose(to, c.dir) }], { duration: secs * 1000, easing: 'linear', fill: 'forwards' });
+    c.walk.onfinish = () => {
+      c.x = to;
+      if (secs && chance(c.jitter ? 0.13 : 0.027, secs)) { // a pause, now and then
+        c.el.classList.add('stop');
+        c.timer = setTimeout(() => next(c), rand(500, 1500));
+      } else {
+        if (chance(1 / 11, secs)) c.dir = -c.dir;
+        next(c);
       }
-      if (c.jitter && Math.random() < dt * 2) {
-        c.speed = rand(20, 50);
-        if (Math.random() < 0.3) c.dir = -c.dir;
-      }
-      c.x += c.dir * c.speed * dt;
-      const max = Math.max(0, innerWidth - c.w);
-      if (c.x <= 0 || c.x >= max) { c.x = Math.min(max, Math.max(0, c.x)); c.dir = c.x <= 0 ? 1 : -1; }
-      else if (Math.random() < dt * (c.jitter ? 0.13 : 0.027)) { c.wait = rand(0.5, 1.5); c.el.classList.add('stop'); }
-      else if (Math.random() < dt / 11) c.dir = -c.dir; // a random turn-around about every 11 s
-      place(c);
-    }
-    raf = requestAnimationFrame(tick);
+    };
   }
-  const start = () => { cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(tick); };
-  // a shrink must not leave a standing critter off-screen
-  addEventListener('resize', () => walkers.forEach((c) => { c.x = Math.min(c.x, Math.max(0, innerWidth - c.w)); place(c); }));
   // they walk under reduced motion too (a small, slow, ambient motion the site's owner chose to keep)
-  document.addEventListener('visibilitychange', () => (document.hidden ? cancelAnimationFrame(raf) : start()));
-  if (!document.hidden) start();
+  walkers.forEach(next);
+  // a shrink must not leave a critter off-screen: each restarts from where it stands now
+  addEventListener('resize', () => walkers.forEach((c) => {
+    c.x = new DOMMatrix(getComputedStyle(c.el).transform).m41;
+    c.walk?.cancel(); clearTimeout(c.timer);
+    next(c);
+  }));
 }
