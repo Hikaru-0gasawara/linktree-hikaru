@@ -41,10 +41,11 @@ function setMode(on) {
     cardEl.tabIndex = 0;
     cardEl.setAttribute('role', 'group');
     cardEl.setAttribute('aria-label', STRINGS[current].cardLabel);
-    flipBtn.after(langEl); // out of the transformed card so position: fixed hits the viewport
+    // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
+    if (langEl.parentNode === front) flipBtn.after(langEl);
   } else {
     for (const a of ['tabindex', 'role', 'aria-label']) cardEl.removeAttribute(a);
-    front.prepend(langEl);
+    if (langEl.parentNode !== front) front.prepend(langEl);
   }
   fitNow();
 }
