@@ -21,6 +21,7 @@ const ease = cubicBezier(0.2, 0.7, 0.2, 1);
 
 export function initCard(cardEl) {
   const front = cardEl.querySelector('.face-front');
+  const sheen = front.querySelector('.sheen');
   let q = IDENTITY;
   let anim = 0; // rAF id of the running inertia or flip
   let press = null; // { id, x, y, lastX, lastY, moved, samples }
@@ -29,10 +30,10 @@ export function initCard(cardEl) {
   function write() {
     cardEl.style.setProperty('--rot', quatToCss(q));
     front.inert = !facingFront(q);
-    // front normal (0,0,1) rotated by the orientation
+    // front normal (0,0,1) rotated by the orientation; on the sheen itself, so only it restyles
     const [x, y, z, r] = q;
-    cardEl.style.setProperty('--sheen-x', (2 * (x * z + r * y)).toFixed(3));
-    cardEl.style.setProperty('--sheen-y', (2 * (y * z - r * x)).toFixed(3));
+    sheen?.style.setProperty('--sheen-x', (2 * (x * z + r * y)).toFixed(3));
+    sheen?.style.setProperty('--sheen-y', (2 * (y * z - r * x)).toFixed(3));
   }
   const stop = () => { cancelAnimationFrame(anim); anim = 0; };
 
@@ -134,7 +135,8 @@ export function initCard(cardEl) {
     q = IDENTITY;
     front.inert = false;
     cardEl.classList.remove('dragging');
-    for (const p of ['--rot', '--sheen-x', '--sheen-y']) cardEl.style.removeProperty(p);
+    cardEl.style.removeProperty('--rot');
+    for (const p of ['--sheen-x', '--sheen-y']) sheen?.style.removeProperty(p);
   }).observe(root, { attributes: true, attributeFilter: ['class'] });
 
   return {
@@ -169,6 +171,8 @@ export function initDeck(track) {
   let drag = null; // a mouse or pen press on the stage that may become a leaf: { id, x, p0, per, moved, samples }
   let target = 0, shown = 0, vel = 0, last = 0;
   const deck = track.querySelector('.deck');
+  // each slot's shade (a card deeper in the pile is darker), an element of its own so the pose sets its opacity directly
+  const shades = slots.map((slot) => slot.appendChild(Object.assign(document.createElement('div'), { className: 'deck-shade' })));
   // snap stops: an empty one at 0 (the sticky stage cannot snap: its position moves with the scroll), then one per further card,
   // each half the track (CSS), so a short wheel or swipe leafs one card
   const stop = () => Object.assign(document.createElement('div'), { className: 'deck-stop' });
@@ -196,7 +200,8 @@ export function initDeck(track) {
       slot.style.transform = `translate3d(${x * CARD_W}px, ${y * CARD_W}px, 0) rotateZ(${rz}deg) scale(${s})`;
       slot.style.zIndex = z;
       slot.style.opacity = opacity;
-      slot.style.setProperty('--shade', shade);
+      slot.style.visibility = opacity ? '' : 'hidden'; // a card deep in the pile is not painted at all
+      shades[i].style.opacity = shade;
     });
     if (Math.round(p) !== cur) {
       if (cur >= 0) tiltOff(slots[cur]);
@@ -296,7 +301,8 @@ export function initDeck(track) {
   function tiltOff(slot) {
     tilt = aim = [0, 0];
     cancelAnimationFrame(tiltRaf); tiltRaf = 0;
-    for (const card of slot.querySelectorAll('.tcg-card')) for (const v of ['--tilt', '--tilt-x', '--tilt-y']) card.style.removeProperty(v);
+    for (const card of slot.querySelectorAll('.tcg-card')) card.style.removeProperty('--tilt');
+    for (const sh of slot.querySelectorAll('.sheen')) for (const v of ['--tilt-x', '--tilt-y']) sh.style.removeProperty(v);
   }
   function tiltStep() {
     tiltRaf = 0;
@@ -305,8 +311,9 @@ export function initDeck(track) {
     const [x, y] = tilt;
     for (const card of slots[cur].querySelectorAll('.tcg-card')) { // a group's pack leans together
       card.style.setProperty('--tilt', `rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 8).toFixed(2)}deg)`);
-      card.style.setProperty('--tilt-x', (x * 0.35).toFixed(3));
-      card.style.setProperty('--tilt-y', (y * 0.35).toFixed(3));
+      const sh = card.querySelector('.sheen');
+      sh?.style.setProperty('--tilt-x', (x * 0.35).toFixed(3));
+      sh?.style.setProperty('--tilt-y', (y * 0.35).toFixed(3));
     }
     if (Math.hypot(aim[0] - x, aim[1] - y) > 1e-3) tiltRaf = requestAnimationFrame(tiltStep);
     else if (!aim[0] && !aim[1]) tiltOff(slots[cur]);
