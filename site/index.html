@@ -24,13 +24,20 @@
 <script>
 // inline so the class lands before first paint: entrance plays once per tab session
 try { if (sessionStorage.entered) document.documentElement.classList.add('no-enter'); else sessionStorage.entered = 1; } catch {}
+// card mode: stored choice wins, else on for fine-pointer hover devices
+let tcg = matchMedia('(hover: hover) and (pointer: fine)').matches;
+try { const v = localStorage.getItem('tcg'); if (v === '1' || v === '0') tcg = v === '1'; } catch {}
+if (tcg) document.documentElement.classList.add('tcg');
 </script>
 <script type="module" src="app.js"></script>
 </head>
 <body>
+<button class="tcg-toggle" type="button" aria-pressed="false" aria-label="Modo carta">TCG</button>
+<button class="tcg-flip" type="button"><span data-i18n="flip">Virar</span></button>
 <div class="stars enter-fade" aria-hidden="true"></div>
 <div class="ground enter-fade" aria-hidden="true"></div>
-<main class="card">
+<div class="tcg-stage"><div class="tcg-fit"><div class="tcg-card">
+<main class="card face-front">
   <div class="lang enter-fade" role="group" aria-label="Idioma">
     <button type="button" data-lang="pt" aria-pressed="true">PT</button>
     <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -64,6 +71,9 @@ try { if (sessionStorage.entered) document.documentElement.classList.add('no-ent
   </nav>
 
   <footer class="foot enter-fade"><span class="open"><span aria-hidden="true">● </span><span data-i18n="open">aberto a projetos</span></span><span>SP · BR</span></footer>
+  <span class="sheen" aria-hidden="true"></span>
 </main>
+<div class="face-back"><img src="img/card-back.webp" width="688" height="961" alt="" loading="lazy"></div>
+</div></div></div>
 </body>
 </html>
