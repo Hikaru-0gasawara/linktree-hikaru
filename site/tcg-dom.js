@@ -156,7 +156,13 @@ const PAGE = { ArrowLeft: -1, ArrowRight: 1, PageUp: -1, PageDown: 1, Home: -Inf
 export function initDeck(track) {
   const slots = [...track.querySelectorAll('.deck-slot')];
   const n = slots.length;
-  const controllers = slots.map((s) => initCard(s.querySelector('.tcg-card')));
+  // one controller per card; a group slot (several cards) answers as one, so the deck's face turns the whole pack
+  const cards = slots.map((s) => [...s.querySelectorAll('.tcg-card')].map(initCard));
+  const controllers = cards.map((cs) => (cs.length === 1 ? cs[0] : {
+    flip: () => cs.forEach((c) => c.flip()),
+    reset: () => cs.forEach((c) => c.reset()),
+    turnTo: (q) => cs.forEach((c) => c.turnTo(q)),
+  }));
   const coarse = matchMedia('(pointer: coarse)'); // touch leafs sideways; mouse and trackpad scroll down
   const fine = matchMedia('(hover: hover) and (pointer: fine)');
   let cur = -1, raf = 0, locked = false, wasOn = null;
@@ -290,18 +296,18 @@ export function initDeck(track) {
   function tiltOff(slot) {
     tilt = aim = [0, 0];
     cancelAnimationFrame(tiltRaf); tiltRaf = 0;
-    const card = slot.querySelector('.tcg-card');
-    for (const v of ['--tilt', '--tilt-x', '--tilt-y']) card.style.removeProperty(v);
+    for (const card of slot.querySelectorAll('.tcg-card')) for (const v of ['--tilt', '--tilt-x', '--tilt-y']) card.style.removeProperty(v);
   }
   function tiltStep() {
     tiltRaf = 0;
     if (cur < 0) return;
     tilt = tilt.map((t, i) => t + (aim[i] - t) * 0.18);
-    const card = slots[cur].querySelector('.tcg-card');
     const [x, y] = tilt;
-    card.style.setProperty('--tilt', `rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 8).toFixed(2)}deg)`);
-    card.style.setProperty('--tilt-x', (x * 0.35).toFixed(3));
-    card.style.setProperty('--tilt-y', (y * 0.35).toFixed(3));
+    for (const card of slots[cur].querySelectorAll('.tcg-card')) { // a group's pack leans together
+      card.style.setProperty('--tilt', `rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 8).toFixed(2)}deg)`);
+      card.style.setProperty('--tilt-x', (x * 0.35).toFixed(3));
+      card.style.setProperty('--tilt-y', (y * 0.35).toFixed(3));
+    }
     if (Math.hypot(aim[0] - x, aim[1] - y) > 1e-3) tiltRaf = requestAnimationFrame(tiltStep);
     else if (!aim[0] && !aim[1]) tiltOff(slots[cur]);
   }
@@ -316,7 +322,9 @@ export function initDeck(track) {
 
   return {
     current: () => cur,
+    slots,
     controllers,
+    cards, // per slot, one controller per card
     // focus mode: no paging; overflow hidden keeps the snap position
     lockPaging(yes) {
       if (yes && cur >= 0) tiltOff(slots[cur]);
