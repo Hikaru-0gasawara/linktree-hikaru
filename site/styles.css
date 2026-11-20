@@ -379,10 +379,10 @@ html.tcg .sheen {
 }
 html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
-/* critters walk in the lane above the ground; DOM order puts them over .ground and under .tcg-stage */
-.critters { display: none; }
-html.tcg .critters {
-  display: block; position: fixed; left: 0; right: 0; height: 58px; overflow: hidden; pointer-events: none;
+/* critters walk in the lane above the ground, in both modes; DOM order puts them over .ground and under
+   the page content (plain: the positioned .card, so text and links stay on top) and .tcg-stage */
+.critters {
+  position: fixed; left: 0; right: 0; height: 58px; overflow: hidden; pointer-events: none;
   bottom: calc(var(--ground-h) + env(safe-area-inset-bottom, 0px));
 }
 .critter {

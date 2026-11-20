@@ -45,7 +45,6 @@ const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
 const coarse = matchMedia('(pointer: coarse)');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-let stopCritters = null;
 
 const focused = () => root.classList.contains('deck-focus');
 const fitNow = () => fit.style.setProperty('--s', (focused() ? fitScale : deckScale)(innerWidth, innerHeight));
@@ -59,13 +58,10 @@ function setMode(on) {
     labelCards(STRINGS[current]);
     // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
     if (langEl.parentNode === front) flipBtn.after(langEl);
-    stopCritters ??= initCritters(crittersEl);
   } else {
     setFocus(false);
     for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);
     if (langEl.parentNode !== front) front.prepend(langEl);
-    stopCritters?.();
-    stopCritters = null;
   }
   fitNow();
 }
@@ -73,6 +69,7 @@ function setMode(on) {
 let current = loadLang(storage, navigator.languages);
 apply(current);
 setMode(root.classList.contains('tcg'));
+initCritters(crittersEl); // once, for both modes
 const deck = initDeck(document.querySelector('.deck-track'));
 flipBtn.addEventListener('click', () => deck.controllers[deck.current()]?.flip());
 resetBtn.addEventListener('click', () => deck.controllers[deck.current()]?.reset());
