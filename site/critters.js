@@ -332,7 +332,6 @@ const rand = (a, b) => a + Math.random() * (b - a);
 
 export function initCritters(container) {
   const scale = innerWidth < 600 ? 2 : 3;
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sheets = {};
   const walkers = CAST.map((name) => {
     const s = SPRITES[name];
@@ -340,7 +339,7 @@ export function initCritters(container) {
     sheets[name] ??= renderSprite(s, scale).toDataURL();
     const speed = name === 'horse' ? 60 : rand(20, 45);
     const el = document.createElement('div');
-    el.className = 'critter' + (still ? ' stop' : '');
+    el.className = 'critter';
     el.style.cssText = `width:${w}px;height:${h}px;background-image:url(${sheets[name]});background-size:${w * n}px ${h}px;`
       + `--sw:${w * n}px;--n:${n};animation-duration:${Math.max(0.25, 16 / speed).toFixed(2)}s`;
     container.append(el);
@@ -374,10 +373,9 @@ export function initCritters(container) {
     raf = requestAnimationFrame(tick);
   }
   const start = () => { cancelAnimationFrame(raf); last = performance.now(); raf = requestAnimationFrame(tick); };
-  // a shrink must not leave a standing (or reduced-motion) critter off-screen
+  // a shrink must not leave a standing critter off-screen
   addEventListener('resize', () => walkers.forEach((c) => { c.x = Math.min(c.x, Math.max(0, innerWidth - c.w)); place(c); }));
-  if (!still) {
-    document.addEventListener('visibilitychange', () => (document.hidden ? cancelAnimationFrame(raf) : start()));
-    if (!document.hidden) start();
-  }
+  // they walk under reduced motion too (a small, slow, ambient motion the site's owner chose to keep)
+  document.addEventListener('visibilitychange', () => (document.hidden ? cancelAnimationFrame(raf) : start()));
+  if (!document.hidden) start();
 }

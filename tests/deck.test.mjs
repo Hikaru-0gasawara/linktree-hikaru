@@ -69,7 +69,9 @@ test('springStep: exact for any step size, settles without overshoot', () => {
 
 test('deckScale', () => {
   near(deckScale(1440, 900), Math.min(1344 / 460, 740 / 642, 1.1));
-  near(deckScale(390, 844), 294 / 460);
+  near(deckScale(390, 844), 390 * 0.76 / 460); // narrow: the iPhone 17 proportion
+  near(deckScale(320, 568), 320 * 0.76 / 460);
+  near(deckScale(402, 874), 306 / 460); // the iPhone 17 itself: both rules agree
 });
 
 test('progressFrom clamps to [0, n-1]', () => {
