@@ -276,14 +276,15 @@ html.tcg .card .lang { display: none; }
 html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
 
 /* the deck's scroller, down on mouse, sideways on touch: a sticky stage, so wheel and swipe over the card scroll the track,
-   and one .deck-stop per card (the first is empty and sits at 0, the others follow the stage) */
+   and one .deck-stop per card: the first is empty and sits at 0; the others follow the stage, each half the track and end-aligned,
+   so card k snaps at k half-tracks (a short wheel or swipe leafs) and stop: always keeps a fling from skipping a card */
 html.tcg .deck-track {
   position: fixed; inset: 0; overflow: hidden auto; overscroll-behavior: contain;
   scroll-snap-type: y mandatory; scrollbar-width: none;
 }
 html.tcg .deck-track::-webkit-scrollbar { display: none; }
-html.tcg .deck-stop { display: block; height: 100%; scroll-snap-align: start; }
-html.tcg .deck-stop:first-child { height: 0; }
+html.tcg .deck-stop { display: block; height: 50%; scroll-snap-align: end; scroll-snap-stop: always; }
+html.tcg .deck-stop:first-child { height: 0; scroll-snap-align: start; }
 /* the card sits between the 56px top bar and the 104px bottom reserve (ground + critter lane); clip keeps the pile from widening the scroll range */
 html.tcg .tcg-stage {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -292,7 +293,8 @@ html.tcg .tcg-stage {
 }
 @media (pointer: coarse) {
   html.tcg .deck-track { display: flex; overflow: auto hidden; scroll-snap-type: x mandatory; }
-  html.tcg .tcg-stage, html.tcg .deck-stop { flex: none; width: 100%; }
+  html.tcg .tcg-stage { flex: none; width: 100%; }
+  html.tcg .deck-stop { flex: none; width: 50%; }
   html.tcg .deck-stop:first-child { width: 0; }
 }
 html.tcg .tcg-fit {

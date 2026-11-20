@@ -145,6 +145,7 @@ export function initCard(cardEl) {
     reset: () => turnTo(IDENTITY),
     // off-centre the card shows its rotation blended away; once fully off-centre it forgets it
     unwind(weight) {
+      if (weight === w) return; // idle cards: nothing to rewrite
       w = weight;
       if (w >= 1) {
         stop();
@@ -170,11 +171,13 @@ export function initDeck(track) {
   const controllers = slots.map((s) => initCard(s.querySelector('.tcg-card')));
   const coarse = matchMedia('(pointer: coarse)'); // touch leafs sideways; mouse and trackpad scroll down
   let cur = -1, raf = 0, locked = false, wasOn = null;
-  // snap stops: an empty one at 0 (the sticky stage cannot snap: its position moves with the scroll), then one per further card
+  const deck = track.querySelector('.deck');
+  // snap stops: an empty one at 0 (the sticky stage cannot snap: its position moves with the scroll), then one per further card,
+  // each half the track (CSS), so a short wheel or swipe leafs one card
   const stop = () => Object.assign(document.createElement('div'), { className: 'deck-stop' });
   track.prepend(stop());
   for (let i = 1; i < n; i++) track.append(stop());
-  const stopSize = () => (coarse.matches ? track.clientWidth : track.clientHeight);
+  const stopSize = () => (coarse.matches ? track.clientWidth : track.clientHeight) / 2;
 
   function update() {
     raf = 0;
@@ -191,8 +194,14 @@ export function initDeck(track) {
       controllers[i].unwind(unwindWeight(i, p));
     });
     if (Math.round(p) !== cur) {
+      // focus inside the card that is going inert moves to the new current card's wrapper
+      const handOff = slots[cur]?.contains(document.activeElement);
+      const first = cur < 0;
       cur = Math.round(p);
       slots.forEach((slot, i) => setInteractive(slot, i === cur));
+      if (handOff) slots[cur].querySelector('.tcg-card').focus({ preventScroll: true });
+      // reduced motion: no turn, the new arrangement fades in instead
+      if (!first && reduced.matches) deck.animate({ opacity: [0, 1] }, { duration: 150, easing: 'ease-out' });
     }
   }
   const schedule = () => { raf ||= requestAnimationFrame(update); };
@@ -203,6 +212,8 @@ export function initDeck(track) {
   const sync = () => {
     if (on() === wasOn) return;
     wasOn = on();
+    locked = false; // a focus-mode lock never outlives the mode
+    track.style.overflow = '';
     track.scrollTo(0, 0);
     cur = -1;
     if (wasOn) schedule();
