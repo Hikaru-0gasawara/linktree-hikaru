@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { letterVars } from '../site/split.js';
 import { scatter, driftY } from '../site/gutter.js';
-import { focusAt, windowed } from '../site/reveal.js';
 import { STRINGS } from '../site/i18n.js';
+import { pageTarget } from '../site/pager.js';
 
 test('letterVars: index, distance from the middle letter, and its size', () => {
   assert.deepEqual(letterVars(3).map(({ d }) => d), [-1, 0, 1]);
@@ -27,31 +27,19 @@ test('driftY: moves up with the scroll at its speed and wraps at the band height
   assert.equal(driftY(500, 0.5, 0), 0); // not measured yet
 });
 
-test('focusAt: 0 far below or above, 1 once the card fills the screen, the same from either side', () => {
-  assert.equal(focusAt(1000, 1000, 1000), 0); // just below
-  assert.equal(focusAt(0, 1000, 1000), 1); // fills it
-  assert.equal(focusAt(-2000, 1000, 1000), 0); // gone above
-  assert.equal(focusAt(-400, 1400, 1000), 1); // a tall card still covering the screen
-  assert.equal(focusAt(300, 1000, 1000), focusAt(-300, 1000, 1000)); // from below and from above
-  const mid = focusAt(400, 1000, 1000);
-  assert.ok(mid > 0 && mid < 1, String(mid));
-});
-
-test('focusAt with a hold: whole only halfway through the hold from below, and through the rest of it', () => {
-  assert.equal(focusAt(0, 1000, 1000, 1000) < 1, true); // arrived, still assembling
-  assert.equal(focusAt(-500, 1000, 1000, 1000), 1); // halfway through the hold
-  assert.equal(focusAt(-1000, 1000, 1000, 1000), 1); // end of the hold
-  assert.equal(focusAt(-3000, 1000, 1000, 1000), 0); // long gone above
-  assert.ok(focusAt(400, 1000, 1000, 1000) < focusAt(400, 1000, 1000), 'a hold makes it slower');
-});
-
-test('windowed: each block takes its share of the card progress', () => {
-  assert.equal(windowed(0.2, [0.3, 0.6]), 0);
-  assert.equal(windowed(0.45, [0.3, 0.6]).toFixed(2), '0.50');
-  assert.equal(windowed(0.9, [0.3, 0.6]), 1);
-});
-
 test('the index and its hint are translated', () => {
   for (const l of Object.keys(STRINGS)) for (const k of ['railLabel', 'scrollHint', 'railMtg', 'railGroup']) assert.ok(STRINGS[l][k], `${l}.${k}`);
   for (const l of Object.keys(STRINGS)) assert.match(STRINGS[l].railGroup, /\{n\}/);
+});
+
+test('pageTarget: one card per gesture, a tall card scrolls to its edge first', () => {
+  const stops = [0, 800, 1600, 2400];
+  assert.equal(pageTarget(stops, 0, 800, 1, 2400), 800);
+  assert.equal(pageTarget(stops, 800, 800, -1, 2400), 0);
+  assert.equal(pageTarget(stops, 2400, 800, 1, 2400), 2400); // the last card stays
+  assert.equal(pageTarget(stops, 0, 800, -1, 2400), 0);
+  const tall = [0, 1200, 2000]; // the first card is 1200 tall in an 800 screen
+  assert.equal(pageTarget(tall, 0, 800, 1, 2000), null); // scroll inside it
+  assert.equal(pageTarget(tall, 400, 800, 1, 2000), 1200); // at its bottom: next card
+  assert.equal(pageTarget(tall, 400, 800, -1, 2000), null); // back up inside it
 });

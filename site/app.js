@@ -6,6 +6,7 @@ import { initCritters } from './critters.js';
 import { initReveal } from './reveal.js';
 import { splitLetters, splitPanel } from './split.js';
 import { initGutter } from './gutter.js';
+import { initPager } from './pager.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -63,13 +64,12 @@ const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
 const track = document.querySelector('.deck-track');
-// plain mode: each project card assembles in its own way (reveal.js, styles.css by data-fx); its blocks are numbered (--b),
+// plain mode: each project card assembles in its own way as it arrives (reveal.js, styles.css by data-fx); its blocks are numbered (--b),
 // its title split into letters and its panel into pieces (split.js)
 const titles = [...document.querySelectorAll('h2.name[data-i18n]')];
 const projects = titles.map((t) => t.closest('.card'));
 for (const card of projects) {
   card.classList.add('proj');
-  card.parentElement.classList.add('pin');
   card.dataset.fx = card.closest('.deck-slot').dataset.card;
   [...card.children].filter((el) => !el.classList.contains('sheen')).forEach((el, b) => el.style.setProperty('--b', b));
 }
@@ -115,6 +115,7 @@ setMode(root.classList.contains('tcg'));
 initCritters(crittersEl); // once, for both modes
 const deck = initDeck(track);
 initReveal(track);
+initPager(track, matchMedia('(prefers-reduced-motion: reduce)'));
 const turnAll = () => { for (const c of deck.controllers) c.turnTo(deckFace()); };
 // Flip and Reset act on the focused card; with a group's fan open, on all of its cards; otherwise on the whole deck
 const focusedCtl = () => (group ? group.ctl[group.sel] : deck.controllers[deck.current()]);
