@@ -594,20 +594,18 @@ html:not(.tcg) .proj .panel :is(dt, .tok) {
 }
 html:not(.tcg) .proj .panel .tok { display: inline-block; }
 
-/* portfolio, pixel art: everything moves in whole steps, like sprites */
-html:not(.tcg) .proj[data-fx="portfolio"] > :not(.sheen, .name, .art) {
-  translate: 0 round(up, calc(var(--u) * 32px), 8px);
-  opacity: round(down, var(--in, 1), .25);
-}
-html:not(.tcg) .proj[data-fx="portfolio"] > .art { opacity: 1; clip-path: inset(0 0 calc(round(up, var(--u), .125) * 100%) 0); }
-html:not(.tcg) .proj[data-fx="portfolio"] > .art img { scale: calc(1.12 + round(up, var(--u), .125) * .9); }
-html:not(.tcg) .proj[data-fx="portfolio"] .ch { translate: 0 calc(round(up, calc(var(--v) * 1.2em), .2em) * -1); opacity: round(up, var(--t), 1); }
-html:not(.tcg) .proj[data-fx="portfolio"] > .panel { opacity: 1; translate: none; clip-path: inset(0 calc(round(up, var(--u), .125) * 100%) 0 0); }
-html:not(.tcg) .proj[data-fx="portfolio"] .panel :is(dt, .tok) { scale: round(up, var(--t), .25); opacity: round(up, var(--t), 1); }
-html:not(.tcg) .proj[data-fx="portfolio"] > .links { translate: 0 calc(round(up, calc(var(--u) * 24px), 8px) * -1); }
-html:not(.tcg) .proj[data-fx="portfolio"] > .foot { translate: none; }
-html:not(.tcg) .proj[data-fx="portfolio"] .foot > :first-child { translate: calc(round(up, calc(var(--u) * 40px), 8px) * -1) 0; }
-html:not(.tcg) .proj[data-fx="portfolio"] .foot > :last-child { translate: round(up, calc(var(--u) * 40px), 8px) 0; }
+/* portfolio, a game screen: the image opens from its middle like a screen turning on and its picture slides down into the frame;
+   the letters drop in and land; the rest pops up to size, all smooth */
+html:not(.tcg) .proj[data-fx="portfolio"] > :not(.sheen, .name, .art) { scale: calc(.92 + .08 * var(--in, 1)); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .art { opacity: 1; clip-path: inset(calc(var(--u) * 50%) calc(var(--u) * 50%)); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .art img { translate: 0 calc(var(--par, 0) * 5% - var(--u) * 18%); }
+html:not(.tcg) .proj[data-fx="portfolio"] .ch { translate: 0 calc(var(--v) * var(--v) * -1.3em); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .panel { opacity: 1; scale: none; clip-path: inset(0 calc(var(--u) * 100%) 0 0); }
+html:not(.tcg) .proj[data-fx="portfolio"] .panel :is(dt, .tok) { scale: calc(.6 + .4 * var(--t)); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .links { scale: none; translate: 0 calc(var(--u) * -24px); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .foot { scale: none; }
+html:not(.tcg) .proj[data-fx="portfolio"] .foot > :first-child { translate: calc(var(--u) * -40px) 0; }
+html:not(.tcg) .proj[data-fx="portfolio"] .foot > :last-child { translate: calc(var(--u) * 40px) 0; }
 
 /* AquaSense, water: the image fills up from the bottom, the rest rises swaying, the letters as bubbles */
 html:not(.tcg) .proj[data-fx="aquasense"] > :not(.sheen, .name, .art) {
