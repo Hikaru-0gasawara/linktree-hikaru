@@ -37,6 +37,14 @@ test('focusAt: 0 far below or above, 1 once the card fills the screen, the same 
   assert.ok(mid > 0 && mid < 1, String(mid));
 });
 
+test('focusAt with a hold: whole only halfway through the hold from below, and through the rest of it', () => {
+  assert.equal(focusAt(0, 1000, 1000, 1000) < 1, true); // arrived, still assembling
+  assert.equal(focusAt(-500, 1000, 1000, 1000), 1); // halfway through the hold
+  assert.equal(focusAt(-1000, 1000, 1000, 1000), 1); // end of the hold
+  assert.equal(focusAt(-3000, 1000, 1000, 1000), 0); // long gone above
+  assert.ok(focusAt(400, 1000, 1000, 1000) < focusAt(400, 1000, 1000), 'a hold makes it slower');
+});
+
 test('windowed: each block takes its share of the card progress', () => {
   assert.equal(windowed(0.2, [0.3, 0.6]), 0);
   assert.equal(windowed(0.45, [0.3, 0.6]).toFixed(2), '0.50');
