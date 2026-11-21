@@ -113,7 +113,7 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 .lang button {
   min-width: 34px; min-height: 44px;
   background: none; border: 0; cursor: pointer;
-  font-size: 10px; letter-spacing: .06em; color: var(--dim);
+  font-size: 11px; letter-spacing: .06em; color: var(--dim);
   position: relative;
 }
 /* visual segment is smaller than the 44px tap target */
@@ -160,11 +160,13 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
   text-align: center;
   white-space: nowrap;
 }
-.name span { display: block; }
+h1.name .w { display: block; }
+/* screen readers read a split title (split.js) from this copy; its letters are hidden from them */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* shorter screens: one line (HIKARU OGASAWARA is ~6.9em) so the card still fits one screen */
 @media (max-height: 799px) {
   html:not(.tcg) h1.name { font-size: min(calc((100vw - 2 * var(--pad)) / 6.9), 7svh, 60px); }
-  html:not(.tcg) h1.name span { display: inline; }
+  html:not(.tcg) h1.name .w { display: inline; }
 }
 
 .role { color: var(--muted); text-align: center; }
@@ -262,13 +264,14 @@ a[href^="mailto:"] { -webkit-touch-callout: default; }
 @property --in { syntax: '*'; inherits: false; }
 @property --cin { syntax: '*'; inherits: false; }
 @property --out { syntax: '*'; inherits: false; }
+@property --tin { syntax: '*'; inherits: false; }
 
 .tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
   min-height: 44px; padding: 0 10px; isolation: isolate;
   align-items: center; gap: 6px;
   background: none; border: 0; cursor: pointer;
-  font-size: 10px; letter-spacing: .06em; color: var(--dim);
+  font-size: 11px; letter-spacing: .06em; color: var(--dim);
   transition: transform 100ms ease-out;
 }
 .tcg-toggle { display: flex; left: max(8px, env(safe-area-inset-left, 0px)); width: 60px; justify-content: center; }
@@ -293,6 +296,29 @@ html.deck-focus .deck-close, html.group-open .deck-close { display: flex; positi
 /* app.js moves .lang out of the card (a transformed ancestor would trap position: fixed); hidden until then */
 html.tcg .card .lang { display: none; }
 html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
+/* plain mode: the switch sits on the card's top-left corner, across from the language switch on its top-right */
+html:not(.tcg) .tcg-toggle { top: env(safe-area-inset-top, 0px); left: max(8px, calc(50% - 194px)); }
+/* card mode on a wide screen: TCG, Flip, Reset and the languages form one bar just above the card, as wide as it, where the eye
+   already is. --ds is the deck scale (app.js), so the bar follows the card's top edge: the stage centres the 642px card between
+   the 56px top bar and the 104px bottom reserve. A focused card or an open fan is bigger, so the bar moves up out of its way. */
+@media (min-width: 720px) {
+  html.tcg {
+    --bar-w: min(460px * var(--ds, 1), 100vw - 16px);
+    --bar-x: calc(50% - var(--bar-w) / 2);
+    --bar-top: max(8px, calc(56px + (100vh - 160px - 642px * var(--ds, 1)) / 2 - 46px));
+  }
+  html.tcg .tcg-toggle, html.tcg .tcg-flip, html.tcg .tcg-reset, html.tcg body > .lang, html.tcg .deck-close {
+    top: var(--bar-top); transition: transform 100ms ease-out, translate 300ms var(--ease);
+  }
+  html.tcg .tcg-toggle { left: var(--bar-x); }
+  html.tcg .tcg-flip { left: calc(var(--bar-x) + 64px); }
+  html.tcg .tcg-reset { left: calc(var(--bar-x) + 128px); }
+  html.tcg body > .lang { right: var(--bar-x); }
+  /* focus mode's close: at the end of the bar, beside the languages, clear of the bigger focused card */
+  html.tcg .deck-close { right: calc(var(--bar-x) - 52px); }
+  html.deck-focus :is(.tcg-toggle, .tcg-flip, .tcg-reset, .deck-close), html.deck-focus body > .lang,
+  html.group-open :is(.tcg-toggle, .tcg-flip, .tcg-reset, .deck-close), html.group-open body > .lang { translate: 0 calc(8px - var(--bar-top)); }
+}
 
 /* the deck's scroller, down on mouse, sideways on touch: a sticky stage, so wheel and swipe over the card scroll the track,
    and one .deck-stop per card: the first is empty and sits at 0; the others follow the stage, each half the track and end-aligned,
@@ -500,4 +526,108 @@ html:not(.tcg) .art img { scale: 1.12; translate: 0 calc(var(--par, 0) * 5%); }
   html:not(.tcg) .deck-slot + .deck-slot .card > :not(.sheen) { translate: 0 calc((1 - var(--in, 1)) * 8px); scale: none; }
   html:not(.tcg) .card { rotate: none; scale: none; }
   html:not(.tcg) .art img { translate: none; }
+}
+
+/* ---- plain mode: title letters, icons, and the wide screen's sides ---- */
+/* title letters (split.js): each its own box, reading its title's progress (--tin from reveal.js, inherited only this far) */
+html:not(.tcg) .name :is(.letters, .w, .ch) { --tin: inherit; }
+html:not(.tcg) .name .w { display: inline-block; white-space: nowrap; }
+html:not(.tcg) h1.name .w { display: block; }
+@media (max-height: 799px) { html:not(.tcg) h1.name .w { display: inline-block; } }
+html:not(.tcg) .name .ch { display: inline-block; --u: calc(1 - var(--tin, 1)); }
+/* the project titles take turns between three ways in. All 2D: a 3D turn, even at rest, makes every letter its own layer.
+   spread: out from the middle, squashed flat (turned away), and they close in */
+html:not(.tcg) [data-fx="spread"] .ch { translate: calc(var(--d) * var(--u) * .5em) 0; scale: 1 max(.15, 1 - var(--a) * var(--u) * .3); }
+/* rise: one by one from below, each unfolding up from its baseline */
+html:not(.tcg) [data-fx="rise"] .ch {
+  --t: clamp(0, var(--tin, 1) * 1.6 - var(--k) / var(--n) * .6, 1);
+  transform-origin: 50% 100%;
+  opacity: var(--t); translate: 0 calc((1 - var(--t)) * .6em); scale: 1 calc(.15 + .85 * var(--t));
+}
+/* tilt: thrown in from both sides, raised and turned, and they land straight */
+html:not(.tcg) [data-fx="tilt"] .ch {
+  translate: calc(var(--d) * var(--u) * .35em) calc(var(--a) * var(--u) * -.3em);
+  rotate: calc(var(--d) * var(--u) * 16deg); scale: calc(1 - var(--u) * .3);
+}
+/* the name, on the first visit: its letters rise and unfold in reading order */
+@keyframes ch-in { from { opacity: 0; translate: 0 .7em; scale: 1 .15; } }
+html:not(.tcg) h1.name.enter-lead { animation: none; }
+html:not(.tcg) h1.name .ch { transform-origin: 50% 100%; animation: ch-in 700ms cubic-bezier(.16, 1, .3, 1) calc(60ms + var(--k) * 35ms) both; }
+html.no-enter h1.name .ch, html.switched h1.name .ch { animation: none; }
+
+/* icons: on a project card the squares spin into place as their links come up; on the first card, one after another */
+html:not(.tcg) .deck-slot + .deck-slot .links :is(.btn, .ico) { --tin: inherit; }
+html:not(.tcg) .deck-slot + .deck-slot .ico { rotate: calc((1 - var(--tin, 1)) * 270deg); scale: calc(.2 + .8 * var(--tin, 1)); }
+@keyframes ico-in { from { opacity: 0; rotate: -180deg; scale: .2; } }
+html:not(.tcg) .grid .ico { animation: ico-in 500ms cubic-bezier(.16, 1, .3, 1) 300ms both; }
+html:not(.tcg) .grid .btn:nth-child(2) .ico { animation-delay: 360ms; }
+html:not(.tcg) .grid .btn:nth-child(3) .ico { animation-delay: 420ms; }
+html:not(.tcg) .grid .btn:nth-child(4) .ico { animation-delay: 480ms; }
+html.no-enter .grid .ico, html.switched .grid .ico { animation: none; }
+/* hover: the square turns into a diamond (its own transform, so it never fights the scroll motion) */
+@media (hover: hover) and (pointer: fine) {
+  .ico { transition: transform 200ms cubic-bezier(.16, 1, .3, 1); }
+  .btn:hover .ico { transform: rotate(45deg) scale(.85); }
+}
+
+/* the sides on a wide screen (gutter.js): the deck's index beside the card, bits from the projects drifting at the edges */
+.rail, .drift { display: none; }
+@media (min-width: 1040px) {
+  html:not(.tcg) .rail, html:not(.tcg) .drift { display: block; transition: opacity 300ms var(--ease), visibility 0s; }
+  /* a group's row is as wide as the screen: the sides step back while it shows */
+  html.row-view .rail, html.row-view .drift { opacity: 0; visibility: hidden; transition: opacity 300ms var(--ease), visibility 0s 300ms; }
+  html:not(.tcg) .drift {
+    position: fixed; inset: 0 0 calc(var(--ground-h) + var(--lane) + env(safe-area-inset-bottom, 0px)); overflow: hidden; pointer-events: none;
+    -webkit-mask-image: linear-gradient(transparent, #000 48px, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(transparent, #000 48px, #000 calc(100% - 24px), transparent);
+  }
+  html:not(.tcg) .rail {
+    position: fixed; z-index: 1; right: calc(50% + 236px);
+    top: calc((100vh - var(--ground-h) - var(--lane)) / 2); translate: 0 -50%;
+  }
+}
+/* each layer is two bands tall (its bits twice), moved by gutter.js at its depth's speed */
+.drift-layer { position: absolute; top: 0; height: 200%; will-change: translate; }
+.drift-layer.l { left: 0; width: calc(50% - 430px); }
+.drift-layer.r { right: 0; width: calc(50% - 240px); }
+@media (max-width: 1239px) { .drift-layer.l { display: none; } }
+.bit { position: absolute; white-space: nowrap; color: var(--muted); letter-spacing: .04em; }
+.d0 .bit { font-size: 10px; opacity: .18; }
+.d1 .bit { font-size: 12px; opacity: .28; }
+.d2 .bit { font-size: 15px; font-weight: 600; opacity: .4; }
+.bit.t2 { color: var(--gold); }
+.bit.t3 { color: var(--jade); }
+.bit.t4 { color: var(--sky); }
+
+.rail-body { position: relative; padding-right: 18px; --row: 28px; }
+.rail ol { list-style: none; display: grid; justify-items: end; }
+.rail button {
+  height: var(--row); padding: 0 4px; background: none; border: 0; cursor: pointer; white-space: nowrap;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
+  transition: color 150ms ease-out, translate 250ms cubic-bezier(.16, 1, .3, 1);
+}
+.rail button[aria-current] { color: var(--gold); translate: -4px 0; }
+@media (hover: hover) and (pointer: fine) { .rail button:not([aria-current]):hover { color: var(--paper); } }
+.rail-line { position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: var(--hair2); }
+.rail-fill { position: absolute; inset: 0; background: var(--gold); transform-origin: 50% 0; scale: 1 0; }
+.rail-mark { position: absolute; left: -3px; top: -3px; width: 7px; height: 7px; background: var(--gold); transition: translate 350ms cubic-bezier(.16, 1, .3, 1); }
+/* the scroll hint, only before the first scroll: a line keeps drawing itself down from the rail */
+.rail-hint { margin-top: 14px; padding-right: 18px; text-align: right; font-size: 11px; letter-spacing: .06em; color: var(--dim); transition: opacity 300ms var(--ease); }
+.rail-hint::after {
+  content: ''; display: block; width: 1px; height: 32px; margin: 8px -18px 0 auto;
+  background: linear-gradient(var(--gold), transparent); transform-origin: 50% 0;
+  animation: cue 1.8s cubic-bezier(.16, 1, .3, 1) infinite;
+}
+@keyframes cue { from { scale: 1 0; opacity: 1; } 70% { scale: 1 1; opacity: 1; } to { scale: 1 1; opacity: 0; } }
+.rail.scrolled .rail-hint { opacity: 0; }
+.rail.scrolled .rail-hint::after { animation-play-state: paused; }
+
+/* reduced motion, softer: letters and icons fade without moving; the bits stay put (gutter.js); the hint's line holds still */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.tcg) .name .ch, html:not(.tcg) .deck-slot + .deck-slot .ico { translate: none; rotate: none; scale: none; }
+  html:not(.tcg) h1.name .ch, html:not(.tcg) .grid .ico { animation: fade 200ms ease-out both; }
+  html.no-enter h1.name .ch, html.no-enter .grid .ico, html.switched h1.name .ch, html.switched .grid .ico { animation: none; }
+  .btn:hover .ico { transform: none; }
+  .rail-hint::after { animation: none; }
+  .rail-mark, .rail button { transition: none; }
 }

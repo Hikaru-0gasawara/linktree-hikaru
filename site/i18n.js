@@ -76,7 +76,7 @@ export const STRINGS = {
     mtgLabel: 'Carta Magic de Hikaru Ogasawara',
     mtgAlt: 'Carta no estilo Magic: Hikaru Ogasawara, Criatura Lendária — Engenheiro Humano. De braços cruzados, com 小笠原光 na vertical. Vigilância, improvisar, Changeling; sempre que um projeto começa (infra, segurança, dados, IoT ou software), você pode colocar esta criatura no campo de batalha. “Aberto a projetos e propostas.”',
     mtgBackAlt: 'Verso da carta, como invocar: NFC, QR code para esta página, São Paulo, foco em Infra · Segurança · Dados, fala PT · EN · 日本語, e-mail, LinkedIn e GitHub.',
-    reset: 'Resetar', close: 'Fechar',
+    reset: 'Resetar', close: 'Fechar', railLabel: 'Cartas', scrollHint: 'role para ver mais', railMtg: 'Magic · Hikaru', railGroup: 'Magic · grupo {n}',
   },
   en: {
     role: 'Computer Engineering student', school: 'Ibmec SP', ageSuffix: 'y/o',
@@ -152,7 +152,7 @@ export const STRINGS = {
     mtgLabel: "Hikaru Ogasawara's Magic card",
     mtgAlt: 'Magic-style card: Hikaru Ogasawara, Legendary Creature — Human Engineer. Arms crossed, 小笠原光 written down the side. Vigilance, improvise, Changeling; whenever a project begins (infrastructure, security, data, IoT or software), you may put this creature onto the battlefield. “Open to projects and proposals.”',
     mtgBackAlt: 'Card back, how to summon: NFC, a QR code to this page, São Paulo, focus on Infra · Security · Data, speaks PT · EN · 日本語, e-mail, LinkedIn and GitHub.',
-    reset: 'Reset', close: 'Close',
+    reset: 'Reset', close: 'Close', railLabel: 'Cards', scrollHint: 'scroll for more', railMtg: 'Magic · Hikaru', railGroup: 'Magic · group {n}',
   },
   ja: {
     role: 'コンピューター工学を専攻する学生', school: 'Ibmec SP', ageSuffix: '歳',
@@ -228,7 +228,7 @@ export const STRINGS = {
     mtgLabel: '小笠原ヒカルのMagicカード',
     mtgAlt: 'Magic風カード：小笠原ヒカル、伝説のクリーチャー — 人間・エンジニア。腕を組んだ姿と縦書きの小笠原光。警戒、即席、多相。プロジェクトが始まるたび（インフラ、セキュリティ、データ、IoT、ソフトウェア）、このクリーチャーを戦場に出してよい。「プロジェクトとご提案、歓迎します。」',
     mtgBackAlt: 'カードの裏面「召喚のしかた」：NFC、このページへのQRコード、サンパウロ、専門はインフラ・セキュリティ・データ、話せる言語はPT・EN・日本語、メール、LinkedIn、GitHub。',
-    reset: 'リセット', close: '閉じる',
+    reset: 'リセット', close: '閉じる', railLabel: 'カード', scrollHint: 'スクロールで続きへ', railMtg: 'Magic・ヒカル', railGroup: 'Magic・グループ{n}',
   },
 };
 

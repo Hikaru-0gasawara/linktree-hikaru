@@ -31,7 +31,9 @@ if (tcg) try {
   const r = document.documentElement;
   r.classList.add('tcg');
   // deck scale (deckScale in deck.js) before first paint; app.js overrides it on .tcg-fit once loaded
-  r.style.setProperty('--s', Math.min(Math.max(innerWidth * 0.76, innerWidth - 96) / 460, (innerHeight - 160) / 642, 1.1));
+  const s = Math.min(Math.max(innerWidth * 0.76, innerWidth - 96) / 460, (innerHeight - 160) / 642, 1.1);
+  r.style.setProperty('--s', s);
+  r.style.setProperty('--ds', s); // the control bar's width and place follow the deck's card
 } catch {}
 </script>
 <script type="module" src="app.js"></script>
@@ -41,6 +43,7 @@ if (tcg) try {
 <button class="tcg-reset" type="button"><span data-i18n="reset">Resetar</span></button>
 <button class="deck-close" type="button" aria-label="Fechar"><span aria-hidden="true">✕</span></button>
 <div class="stars enter-fade" aria-hidden="true"></div>
+<div class="drift" aria-hidden="true"></div>
 <div class="ground enter-fade" aria-hidden="true"></div>
 <div class="critters" aria-hidden="true"></div>
 <main class="deck-track">
@@ -61,7 +64,7 @@ if (tcg) try {
     <span class="dot" aria-hidden="true"></span>
   </div>
 
-  <h1 class="name enter-lead"><span>HIKARU</span> <span>OGASAWARA</span></h1>
+  <h1 class="name enter-lead"><span class="w">HIKARU</span> <span class="w">OGASAWARA</span></h1>
 
   <p class="role enter-support"><span data-i18n="role">Estudante de Eng. de Computação</span><br><span data-i18n="school">Ibmec SP</span> · <span id="age">21</span><span id="ageSuffix"> anos</span></p>
 
@@ -303,5 +306,6 @@ if (tcg) try {
 </div>
 </div></div></div>
 </main>
+<nav class="rail"></nav>
 </body>
 </html>
