@@ -84,7 +84,7 @@ const slots = html.split('<div class="deck-slot"').slice(1);
 const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
 
 test('deck: Hikaru first, then project cards, then the Magic-format cards, always last', () => {
-  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'mtg-hikaru', 'grupo-1', 'grupo-2']);
+  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'aquasense', 'ecos', 'ferrovia', 'fabio', 'cofre', 'mtg-hikaru', 'grupo-1', 'grupo-2']);
   const mtg = slots.map((s) => s.includes('class="card face-front mtg"'));
   const first = mtg.indexOf(true);
   assert.ok(first > 0 && mtg.slice(first).every(Boolean), 'a Magic card before a project card');
@@ -114,7 +114,7 @@ test('deck: Hikaru first, then project cards, then the Magic-format cards, alway
 
 test('image alt texts are translated', () => {
   const keys = [...html.matchAll(/data-i18n-alt="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(keys.length, 12);
+  assert.equal(keys.length, 17);
   for (const k of keys) assert.ok(k in STRINGS.pt, `unknown key ${k}`);
 });
 
@@ -135,6 +135,18 @@ test('Hikaru card has the four contact links and no Play', () => {
 test('portfolio card has Play and the code link', () => {
   const s = slot('portfolio');
   for (const href of [PLAY, CODE]) assert.ok(s.includes(`href="${href}"`), `missing ${href}`);
+});
+
+test('project cards: art, a code link, and each string in every language', () => {
+  for (const [name, k] of [['aquasense', 'aq'], ['ecos', 'ec'], ['ferrovia', 'fe'], ['fabio', 'fb'], ['cofre', 'cf']]) {
+    const s = slot(name);
+    const img = new RegExp(`<img src="img/(proj-${name}\\.webp)" width="576" height="360" alt="[^"]+" data-i18n-alt="${k}Alt"`).exec(s);
+    assert.ok(img, `${name} art`);
+    const file = new URL(`../site/img/${img[1]}`, import.meta.url);
+    assert.ok(existsSync(file) && statSync(file).size < 60 * 1024, `${img[1]} missing or too big`);
+    assert.match(s, /href="https:\/\/github\.com\/[^"]+" target="_blank" rel="noopener">.*data-i18n="pfCode"/);
+    for (const l of Object.keys(STRINGS)) for (const f of ['Title', 'Type', 'Desc', 'Stack', 'Highlights', 'Status', 'Alt']) assert.ok(STRINGS[l][k + f], `${l}.${k}${f}`);
+  }
 });
 
 test('portfolio art has alt, explicit size and stays small', () => {
