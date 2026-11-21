@@ -294,11 +294,13 @@ html.tcg, html.tcg body { overflow: hidden; height: 100%; }
 html.tcg .tcg-toggle, html.tcg .tcg-flip, html.tcg .tcg-reset { position: fixed; }
 html.tcg .tcg-flip, html.tcg .tcg-reset { display: flex; }
 html.deck-focus .deck-close, html.group-open .deck-close { display: flex; position: fixed; }
-/* app.js moves .lang out of the card (a transformed ancestor would trap position: fixed); hidden until then */
-html.tcg .card .lang { display: none; }
-html.tcg body > .lang { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
-/* plain mode: the switch sits on the card's top-left corner, across from the language switch on its top-right */
-html:not(.tcg) .tcg-toggle { top: env(safe-area-inset-top, 0px); left: max(8px, calc(50% - 194px)); }
+/* app.js moves .lang out of the card at load (a transformed ancestor would trap position: fixed) */
+body > .lang { position: fixed; }
+html.tcg body > .lang { z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); }
+/* plain mode: the switch on the card's top-left corner, across from the language switch on its top-right, both held on screen
+   on every card */
+html:not(.tcg) .tcg-toggle { position: fixed; top: env(safe-area-inset-top, 0px); left: max(8px, calc(50% - 194px)); }
+html:not(.tcg) body > .lang { top: env(safe-area-inset-top, 0px); right: max(6px, calc(50% - 194px)); }
 /* card mode on a wide screen: TCG, Flip, Reset and the languages form one bar just above the card, as wide as it, where the eye
    already is. --ds is the deck scale (app.js), so the bar follows the card's top edge: the stage centres the 642px card between
    the 56px top bar and the 104px bottom reserve. A focused card or an open fan is bigger, so the bar moves up out of its way. */
