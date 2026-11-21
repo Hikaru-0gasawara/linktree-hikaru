@@ -265,6 +265,7 @@ h1.name .w { display: block; }
 @property --cin { syntax: '*'; inherits: false; }
 @property --out { syntax: '*'; inherits: false; }
 @property --pin { syntax: '*'; inherits: false; }
+@property --p { syntax: '<number>'; inherits: true; initial-value: 1; }
 
 .tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
@@ -539,9 +540,10 @@ html:not(.tcg) h1.name.enter-lead { animation: none; }
 html:not(.tcg) h1.name .ch { transform-origin: 50% 100%; animation: ch-in 700ms cubic-bezier(.16, 1, .3, 1) calc(60ms + var(--k) * 35ms) both; }
 html.no-enter h1.name .ch, html.switched h1.name .ch { animation: none; }
 
-/* ---- plain mode: a project card assembles as it comes to fill the screen ----
-   reveal.js gives each block its window of the card's progress (--in) and the panel a later one for its pieces (--pin).
-   Here they are inherited only as far as the parts that move: the title's letters, the panel's labels and words, the foot's
+/* ---- plain mode: the page turns one card per scroll or swipe, and a project card assembles as it arrives ----
+   The card is blank (--p 0) until reveal.js marks it .assemble, then --p runs 0..1 in time. Each block lands over its own
+   window of that run (--wa..--wb), eased (--in), the image first and the foot last; the panel's pieces after the box (--pin).
+   They are inherited only as far as the parts that move: the title's letters, the panel's labels and words, the foot's
    two ends. Per part:
      --u  how far a block still has to go (1 - --in);  --sd  its side, by its place in the card (-1, 1, -1...)
      --t  a letter's or piece's own progress, staggered in reading order; --v  how far it still has to go;  --sk  its side
@@ -553,12 +555,27 @@ html:not(.tcg) .proj > :not(.sheen) {
   opacity: var(--in, 1);
 }
 html:not(.tcg) .proj > .name { opacity: 1; }
-/* held: the card's holder is half a screen taller than it, and the card stays put (sticky) while that extra half screen scrolls by, so it
-   finishes assembling where it will be read. The track is the size container, so the card is still exactly a screen tall. */
-html:not(.tcg) .deck-track { container-type: size; }
-html:not(.tcg) .tcg-card.pin { display: block; }
-html:not(.tcg) .tcg-card.pin::after { content: ''; display: block; height: 50cqh; }
-html:not(.tcg) .proj { position: sticky; top: 0; min-height: 100cqh; }
+/* one card per scroll: every card (a group, its row) is a stop the page cannot skip */
+html:not(.tcg) .deck-track { scroll-snap-type: y mandatory; }
+html:not(.tcg) .deck-slot:not([data-group]) > .tcg-card > .face-front, html:not(.tcg) .deck-slot[data-group] { scroll-snap-align: start; scroll-snap-stop: always; }
+@keyframes assemble { from { --p: 0; } to { --p: 1; } }
+html:not(.tcg) .proj { --p: 0; }
+html:not(.tcg) .proj.assemble { animation: assemble 1600ms linear both; }
+html:not(.tcg) .proj > :not(.sheen) {
+  --w: clamp(0, (var(--p) - var(--wa, 0)) / (var(--wb, 1) - var(--wa, 0)), 1);
+  --in: calc(var(--w) * var(--w) * (3 - 2 * var(--w)));
+}
+html:not(.tcg) .proj > .art { --wa: 0; --wb: .6; }
+html:not(.tcg) .proj > .name { --wa: .05; --wb: .8; }
+html:not(.tcg) .proj > .role { --wa: .22; --wb: .58; }
+html:not(.tcg) .proj > .desc { --wa: .3; --wb: .66; }
+html:not(.tcg) .proj > .panel {
+  --wa: .38; --wb: .62;
+  --pw: clamp(0, (var(--p) - .5) / .5, 1);
+  --pin: calc(var(--pw) * var(--pw) * (3 - 2 * var(--pw)));
+}
+html:not(.tcg) .proj > .links { --wa: .58; --wb: .88; }
+html:not(.tcg) .proj > .foot { --wa: .7; --wb: 1; }
 /* the image as wide as the card's text, not a small window in the middle */
 html:not(.tcg) .proj > .art { width: 100%; height: auto; aspect-ratio: 1.6; }
 html:not(.tcg) .proj .name :is(.letters, .w, .ch) { --in: inherit; }
@@ -660,6 +677,7 @@ html:not(.tcg) .proj[data-fx="cofre"] .foot > :last-child { translate: 0 calc(va
   html:not(.tcg) .proj > :not(.sheen), html:not(.tcg) .proj .ch, html:not(.tcg) .proj .panel :is(dt, .tok), html:not(.tcg) .proj .foot > * {
     translate: none !important; rotate: none !important; scale: none !important; transform: none !important; clip-path: none !important;
   }
+  html:not(.tcg) .proj.assemble { animation-duration: 700ms; }
   html:not(.tcg) .proj > .art img { translate: none !important; rotate: none !important; scale: 1.12 !important; filter: none !important; }
   html:not(.tcg) .proj > :not(.sheen, .name) { opacity: var(--in, 1) !important; }
 }

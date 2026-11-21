@@ -72,7 +72,7 @@ export function initGutter(track, rail, drift, reduced) {
 
   // measured on resize, mode change and card size change only, never inside a frame (a read there would force a layout)
   let tops = [], bandH = 0, shown = false, current = -1, raf = 0;
-  const measure = () => { shown = rail.getClientRects().length > 0; tops = cards.map((c) => (c.classList.contains('proj') ? c.parentElement.offsetTop + (c.parentElement.offsetHeight - c.offsetHeight) / 2 : c.offsetTop)); bandH = drift.clientHeight; };
+  const measure = () => { shown = rail.getClientRects().length > 0; tops = cards.map((c) => c.offsetTop); bandH = drift.clientHeight; };
   function update() {
     raf = 0;
     if (!shown) return; // card mode or a narrow screen: the sides are hidden
