@@ -553,11 +553,11 @@ html:not(.tcg) .proj > :not(.sheen) {
   opacity: var(--in, 1);
 }
 html:not(.tcg) .proj > .name { opacity: 1; }
-/* held: the card's holder is a screen taller than it, and the card stays put (sticky) while that extra screen scrolls by, so it
+/* held: the card's holder is half a screen taller than it, and the card stays put (sticky) while that extra half screen scrolls by, so it
    finishes assembling where it will be read. The track is the size container, so the card is still exactly a screen tall. */
 html:not(.tcg) .deck-track { container-type: size; }
 html:not(.tcg) .tcg-card.pin { display: block; }
-html:not(.tcg) .tcg-card.pin::after { content: ''; display: block; height: 100cqh; }
+html:not(.tcg) .tcg-card.pin::after { content: ''; display: block; height: 50cqh; }
 html:not(.tcg) .proj { position: sticky; top: 0; min-height: 100cqh; }
 /* the image as wide as the card's text, not a small window in the middle */
 html:not(.tcg) .proj > .art { width: 100%; height: auto; aspect-ratio: 1.6; }
