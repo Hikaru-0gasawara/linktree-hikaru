@@ -62,6 +62,8 @@ const fit = document.querySelector('.tcg-fit');
 const stage = document.querySelector('.tcg-stage');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
+// the languages stay on screen on every card, in both modes: out of the card (a transformed ancestor would trap position: fixed)
+resetBtn.after(langEl);
 const crittersEl = document.querySelector('.critters');
 const track = document.querySelector('.deck-track');
 // plain mode: each project card assembles in its own way as it arrives (reveal.js, styles.css by data-fx); its blocks are numbered (--b),
@@ -95,15 +97,12 @@ function setMode(on) {
     for (const c of cards) { c.tabIndex = 0; c.setAttribute('role', 'group'); }
     labelCards(STRINGS[current]);
     packInert(true);
-    // out of the transformed card so position: fixed hits the viewport; moving a node restarts its entrance, so only when needed
-    if (langEl.parentNode === front) resetBtn.after(langEl);
   } else {
     closeGroup();
     setFocus(false);
     packInert(false);
     back = false;
     for (const c of cards) for (const a of ['tabindex', 'role', 'aria-label']) c.removeAttribute(a);
-    if (langEl.parentNode !== front) front.prepend(langEl);
   }
   fitNow();
 }
