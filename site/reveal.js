@@ -3,7 +3,7 @@
 //   --cin on each card after the first: 0..1 over its first 60% of a screen (the card is laid down straight)
 //   --out on each card: 0..1 as it scrolls out of the top (it settles back under the next)
 //   --par on each art window: -1..1 from the bottom of the screen to the top (its image drifts, a slow parallax)
-// A project card (.proj) instead assembles: styles.css holds it in place (sticky) over an extra screen of scroll, and its blocks
+// A project card (.proj) instead assembles: styles.css holds it in place (sticky) over an extra half screen of scroll, and its blocks
 // read one progress, how near the card is to filling the screen and how far into that hold, each block over its own window of
 // it, so the parts land one after another; the last lands halfway through the hold. From above, it is whole as it arrives.
 // styles.css gives each project its own way in.
