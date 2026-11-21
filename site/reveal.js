@@ -3,13 +3,26 @@
 //   --cin on each card after the first: 0..1 over its first 60% of a screen (the card is laid down straight)
 //   --out on each card: 0..1 as it scrolls out of the top (it settles back under the next)
 //   --par on each art window: -1..1 from the bottom of the screen to the top (its image drifts, a slow parallax)
-//   --tin on each card's title and links: 0..1 over the lower 40% of the screen, a longer run than --in, for their letters and icons
+// A project card (.proj) instead assembles over most of a screen: its blocks read one progress, how near the card is to filling
+// the screen (from below or from above), each block over its own window of it, so the parts land one after another and the
+// last lands as the card settles. styles.css gives each project its own way in.
+//   --in  on each block: its window of that progress; --pin on the panel: its labels and values, after the box has landed
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
 const easeOut = (t) => 1 - (1 - t) ** 3;
 
 export const enterAt = (top, h, view) => easeOut(clamp01((view - top) / Math.max(Math.min(h, view / 2), 1)));
 export const leaveAt = (top, h) => clamp01(-top / Math.max(h, 1));
-export const titleAt = (top, view) => easeOut(clamp01((view - top) / (view * 0.4)));
+// 0 while the card is more than 83% of a screen away from filling it, 1 once it does (the plain-mode cards are a screen tall)
+export const focusAt = (top, h, view) => {
+  const d = top > 0 ? top : Math.max(0, view - (top + h));
+  const x = 1 - clamp01((d - view * 0.03) / (view * 0.8));
+  return x * x * (3 - 2 * x);
+};
+export const windowed = (p, [a, b]) => clamp01((p - a) / (b - a));
+// each block's window, in reading order: the image first, the foot last
+const WINDOWS = { art: [0, 0.45], name: [0.05, 0.75], role: [0.2, 0.55], desc: [0.28, 0.63], panel: [0.36, 0.6], links: [0.55, 0.85], foot: [0.65, 1] };
+const PIECES = [0.5, 1];
+const windowOf = (el) => WINDOWS[Object.keys(WINDOWS).find((k) => el.classList.contains(k))] ?? [0, 1];
 export const driftAt = (top, h, view) => Math.min(Math.max((top + h / 2 - view / 2) / (view / 2), -1), 1);
 
 export function initReveal(track) {
@@ -25,20 +38,28 @@ export function initReveal(track) {
     const writes = [];
     cards.forEach((card, i) => {
       const top = card.offsetTop - y;
-      writes.push([card, '--out', leaveAt(top, card.offsetHeight)]);
-      if (i > 0) {
+      if (card.classList.contains('proj')) {
+        const p = focusAt(top, card.offsetHeight, view);
+        if (top < view * 1.5) for (const img of card.querySelectorAll('img[loading="lazy"]')) img.loading = 'eager';
+        for (const el of card.children) {
+          if (el.classList.contains('sheen')) continue;
+          writes.push([el, '--in', windowed(p, windowOf(el))]);
+          if (el.classList.contains('panel')) writes.push([el, '--pin', windowed(p, PIECES)]);
+        }
+      } else writes.push([card, '--out', leaveAt(top, card.offsetHeight)]);
+      if (i > 0 && !card.classList.contains('proj')) {
         writes.push([card, '--cin', clamp01((view - top) / (view * 0.6))]);
         // a lazy image off to the side of a group's row only loads once scrolled into the row: load it as its card comes near
         if (top < view * 1.5) for (const img of card.querySelectorAll('img[loading="lazy"]')) img.loading = 'eager';
         for (const el of card.children) {
           if (el.classList.contains('sheen')) continue;
           writes.push([el, '--in', enterAt(top + el.offsetTop, el.offsetHeight, view)]);
-          if (el.matches('.name, .links')) writes.push([el, '--tin', titleAt(top + el.offsetTop, view)]);
         }
       }
       for (const art of card.querySelectorAll('.art')) writes.push([art, '--par', driftAt(top + art.offsetTop, art.offsetHeight, view)]);
     });
-    for (const [el, k, v] of writes) el.style.setProperty(k, v.toFixed(3));
+    // only what changed: an unchanged custom property would still restyle the element and whatever inherits it
+    for (const [el, k, v] of writes) { const t = v.toFixed(3); if (el.style.getPropertyValue(k) !== t) el.style.setProperty(k, t); }
   }
   const schedule = () => { raf ||= requestAnimationFrame(update); };
   track.addEventListener('scroll', schedule, { passive: true });

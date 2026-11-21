@@ -264,7 +264,7 @@ h1.name .w { display: block; }
 @property --in { syntax: '*'; inherits: false; }
 @property --cin { syntax: '*'; inherits: false; }
 @property --out { syntax: '*'; inherits: false; }
-@property --tin { syntax: '*'; inherits: false; }
+@property --pin { syntax: '*'; inherits: false; }
 
 .tcg-toggle, .tcg-flip, .tcg-reset, .deck-close {
   position: absolute; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px));
@@ -504,10 +504,10 @@ html.tcg .face-back img {
 }
 
 /* plain mode scroll motion: reveal.js writes the progress variables, in every browser and at every size.
-   Each card after the first is laid down as it comes up (a slight turn straightens) while its blocks rise into place one by
-   one (their positions stagger them); a card leaving the top settles back under the next; art windows drift (parallax).
+   The Magic cards after the first are laid down as they come up (a slight turn straightens) while their blocks rise into place
+   one by one; a card leaving the top settles back under the next; art windows drift (parallax).
    Individual transform properties, so the entrance animations' transform and the motion never fight. */
-html:not(.tcg) .deck-slot + .deck-slot .card > :not(.sheen) {
+html:not(.tcg) .deck-slot + .deck-slot .card:not(.proj) > :not(.sheen) {
   animation: none; /* below the fold at load: the scroll reveals them instead of the entrance */
   opacity: var(--in, 1);
   translate: 0 calc((1 - var(--in, 1)) * 28px);
@@ -523,41 +523,133 @@ html:not(.tcg) .art { overflow: hidden; }
 html:not(.tcg) .art img { scale: 1.12; translate: 0 calc(var(--par, 0) * 5%); }
 /* reduced motion, softer: a short rise and the fade, no turn, no parallax */
 @media (prefers-reduced-motion: reduce) {
-  html:not(.tcg) .deck-slot + .deck-slot .card > :not(.sheen) { translate: 0 calc((1 - var(--in, 1)) * 8px); scale: none; }
+  html:not(.tcg) .deck-slot + .deck-slot .card:not(.proj) > :not(.sheen) { translate: 0 calc((1 - var(--in, 1)) * 8px); scale: none; }
   html:not(.tcg) .card { rotate: none; scale: none; }
   html:not(.tcg) .art img { translate: none; }
 }
 
-/* ---- plain mode: title letters, icons, and the wide screen's sides ---- */
-/* title letters (split.js): each its own box, reading its title's progress (--tin from reveal.js, inherited only this far) */
-html:not(.tcg) .name :is(.letters, .w, .ch) { --tin: inherit; }
+/* ---- plain mode: title letters ---- */
 html:not(.tcg) .name .w { display: inline-block; white-space: nowrap; }
 html:not(.tcg) h1.name .w { display: block; }
 @media (max-height: 799px) { html:not(.tcg) h1.name .w { display: inline-block; } }
-html:not(.tcg) .name .ch { display: inline-block; --u: calc(1 - var(--tin, 1)); }
-/* the project titles take turns between three ways in. All 2D: a 3D turn, even at rest, makes every letter its own layer.
-   spread: out from the middle, squashed flat (turned away), and they close in */
-html:not(.tcg) [data-fx="spread"] .ch { translate: calc(var(--d) * var(--u) * .5em) 0; scale: 1 max(.15, 1 - var(--a) * var(--u) * .3); }
-/* rise: one by one from below, each unfolding up from its baseline */
-html:not(.tcg) [data-fx="rise"] .ch {
-  --t: clamp(0, var(--tin, 1) * 1.6 - var(--k) / var(--n) * .6, 1);
-  transform-origin: 50% 100%;
-  opacity: var(--t); translate: 0 calc((1 - var(--t)) * .6em); scale: 1 calc(.15 + .85 * var(--t));
-}
-/* tilt: thrown in from both sides, raised and turned, and they land straight */
-html:not(.tcg) [data-fx="tilt"] .ch {
-  translate: calc(var(--d) * var(--u) * .35em) calc(var(--a) * var(--u) * -.3em);
-  rotate: calc(var(--d) * var(--u) * 16deg); scale: calc(1 - var(--u) * .3);
-}
+html:not(.tcg) .name .ch { display: inline-block; }
 /* the name, on the first visit: its letters rise and unfold in reading order */
 @keyframes ch-in { from { opacity: 0; translate: 0 .7em; scale: 1 .15; } }
 html:not(.tcg) h1.name.enter-lead { animation: none; }
 html:not(.tcg) h1.name .ch { transform-origin: 50% 100%; animation: ch-in 700ms cubic-bezier(.16, 1, .3, 1) calc(60ms + var(--k) * 35ms) both; }
 html.no-enter h1.name .ch, html.switched h1.name .ch { animation: none; }
 
-/* icons: on a project card the squares spin into place as their links come up; on the first card, one after another */
-html:not(.tcg) .deck-slot + .deck-slot .links :is(.btn, .ico) { --tin: inherit; }
-html:not(.tcg) .deck-slot + .deck-slot .ico { rotate: calc((1 - var(--tin, 1)) * 270deg); scale: calc(.2 + .8 * var(--tin, 1)); }
+/* ---- plain mode: a project card assembles as it comes to fill the screen ----
+   reveal.js gives each block its window of the card's progress (--in) and the panel a later one for its pieces (--pin).
+   Here they are inherited only as far as the parts that move: the title's letters, the panel's labels and words, the foot's
+   two ends. Per part:
+     --u  how far a block still has to go (1 - --in);  --sd  its side, by its place in the card (-1, 1, -1...)
+     --t  a letter's or piece's own progress, staggered in reading order; --v  how far it still has to go;  --sk  its side
+   Each project has its own way in (data-fx is its slot's name). All 2D: a 3D turn, even at rest, makes every letter a layer. */
+html:not(.tcg) .proj > :not(.sheen) {
+  animation: none;
+  --u: calc(1 - var(--in, 1));
+  --sd: calc(mod(var(--b), 2) * 2 - 1);
+  opacity: var(--in, 1);
+}
+html:not(.tcg) .proj > .name { opacity: 1; }
+html:not(.tcg) .proj .name :is(.letters, .w, .ch) { --in: inherit; }
+html:not(.tcg) .proj .name .ch {
+  --t: clamp(0, (var(--in, 1) - var(--k) / var(--n) * .6) / .4, 1);
+  --v: calc(1 - var(--t));
+  --sk: calc(mod(var(--k), 2) * 2 - 1);
+  opacity: var(--t);
+}
+html:not(.tcg) .proj .panel :is(dt, dd, .tok) { --pin: inherit; }
+html:not(.tcg) .proj .panel :is(dt, .tok) {
+  --t: clamp(0, (var(--pin, 1) - var(--j) / var(--m) * .6) / .4, 1);
+  --v: calc(1 - var(--t));
+  --sk: calc(mod(var(--j), 2) * 2 - 1);
+  opacity: var(--t);
+}
+html:not(.tcg) .proj .panel .tok { display: inline-block; }
+
+/* portfolio, pixel art: everything moves in whole steps, like sprites */
+html:not(.tcg) .proj[data-fx="portfolio"] > :not(.sheen, .name, .art) {
+  translate: 0 round(up, calc(var(--u) * 32px), 8px);
+  opacity: round(down, var(--in, 1), .25);
+}
+html:not(.tcg) .proj[data-fx="portfolio"] > .art { opacity: 1; clip-path: inset(0 0 calc(round(up, var(--u), .125) * 100%) 0); }
+html:not(.tcg) .proj[data-fx="portfolio"] .ch { translate: 0 calc(round(up, calc(var(--v) * 1.2em), .2em) * -1); opacity: round(up, var(--t), 1); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .panel { opacity: 1; translate: none; clip-path: inset(0 calc(round(up, var(--u), .125) * 100%) 0 0); }
+html:not(.tcg) .proj[data-fx="portfolio"] .panel :is(dt, .tok) { scale: round(up, var(--t), .25); opacity: round(up, var(--t), 1); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .links { translate: 0 calc(round(up, calc(var(--u) * 24px), 8px) * -1); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .foot { translate: none; }
+html:not(.tcg) .proj[data-fx="portfolio"] .foot > :first-child { translate: calc(round(up, calc(var(--u) * 40px), 8px) * -1) 0; }
+html:not(.tcg) .proj[data-fx="portfolio"] .foot > :last-child { translate: round(up, calc(var(--u) * 40px), 8px) 0; }
+
+/* AquaSense, water: the image fills up from the bottom, the rest rises swaying, the letters as bubbles */
+html:not(.tcg) .proj[data-fx="aquasense"] > :not(.sheen, .name, .art) {
+  translate: calc(sin(calc(var(--u) * 360deg)) * var(--sd) * 10px) calc(var(--u) * 48px);
+}
+html:not(.tcg) .proj[data-fx="aquasense"] > .art { opacity: 1; clip-path: inset(calc(var(--u) * 100%) 0 0 0); }
+html:not(.tcg) .proj[data-fx="aquasense"] .ch {
+  translate: calc(sin(calc(var(--v) * 540deg + var(--k) * 40deg)) * .15em) calc(var(--v) * 1.4em);
+  scale: calc(.4 + .6 * var(--t));
+}
+html:not(.tcg) .proj[data-fx="aquasense"] .panel :is(dt, .tok) { translate: 0 calc(var(--v) * 14px); }
+
+/* Ecos, a terminal game: the image powers on like a CRT, blocks glitch in from either side, flickering */
+html:not(.tcg) .proj[data-fx="ecos"] > :not(.sheen, .name, .art) {
+  translate: calc(var(--sd) * var(--u) * 60px) 0;
+  transform: skewX(calc(var(--sd) * var(--u) * -20deg));
+  opacity: calc(var(--in, 1) * (.55 + .45 * pow(cos(calc(var(--u) * 1440deg)), 2)));
+}
+html:not(.tcg) .proj[data-fx="ecos"] > .art { opacity: 1; clip-path: inset(calc(var(--u) * 49.5%) 0); }
+html:not(.tcg) .proj[data-fx="ecos"] .ch { translate: calc(var(--sk) * var(--v) * .8em) 0; transform: skewX(calc(var(--sk) * var(--v) * 30deg)); }
+html:not(.tcg) .proj[data-fx="ecos"] > .panel { translate: none; transform: none; scale: 1 calc(.02 + .98 * var(--in, 1)); }
+html:not(.tcg) .proj[data-fx="ecos"] .panel :is(dt, .tok) { translate: calc(var(--sk) * var(--v) * 24px) 0; }
+html:not(.tcg) .proj[data-fx="ecos"] > .foot { translate: none; transform: none; }
+html:not(.tcg) .proj[data-fx="ecos"] .foot > :first-child { translate: calc(var(--u) * 80px) 0; }
+html:not(.tcg) .proj[data-fx="ecos"] .foot > :last-child { translate: calc(var(--u) * -80px) 0; }
+
+/* Ferrovia, trains: everything pulls in from the right and brakes, the letters as wagons, the back ones from farther */
+html:not(.tcg) .proj[data-fx="ferrovia"] > :not(.sheen, .name, .art) { translate: calc(var(--u) * var(--u) * min(45vw, 360px)) 0; }
+html:not(.tcg) .proj[data-fx="ferrovia"] > .art { opacity: 1; clip-path: inset(0 0 0 calc(var(--u) * 100%)); }
+html:not(.tcg) .proj[data-fx="ferrovia"] .ch { translate: calc(var(--v) * (3em + var(--k) * .4em)) 0; }
+html:not(.tcg) .proj[data-fx="ferrovia"] .panel :is(dt, .tok) { translate: calc(var(--v) * 30px) 0; }
+
+/* Fábio, a 3D game: blocks fly in from scattered directions, turning; the image opens like a lens */
+html:not(.tcg) .proj[data-fx="fabio"] > :not(.sheen, .name, .art) {
+  translate: calc(cos(calc(var(--b) * 137deg)) * var(--u) * 80px) calc(sin(calc(var(--b) * 137deg)) * var(--u) * 80px);
+  rotate: calc(var(--sd) * var(--u) * 12deg);
+  scale: calc(.85 + .15 * var(--in, 1));
+}
+html:not(.tcg) .proj[data-fx="fabio"] > .art { opacity: 1; clip-path: circle(calc(var(--in, 1) * 100%) at 30% 40%); }
+html:not(.tcg) .proj[data-fx="fabio"] .ch {
+  translate: calc(cos(calc(var(--k) * 97deg)) * var(--v) * 1.2em) calc(sin(calc(var(--k) * 97deg)) * var(--v) * 1.2em);
+  rotate: calc(var(--d) * var(--v) * 40deg);
+}
+html:not(.tcg) .proj[data-fx="fabio"] .panel :is(dt, .tok) {
+  translate: calc(cos(calc(var(--j) * 113deg)) * var(--v) * 20px) calc(sin(calc(var(--j) * 113deg)) * var(--v) * 14px);
+  scale: calc(.6 + .4 * var(--t));
+}
+
+/* Cofre, a safe: the image opens like vault doors, the letters roll in like a combination dial, the pieces click into place */
+html:not(.tcg) .proj[data-fx="cofre"] > :not(.sheen, .name, .art) { translate: 0 calc(var(--sd) * var(--u) * 40px); }
+html:not(.tcg) .proj[data-fx="cofre"] > .art { opacity: 1; clip-path: inset(0 calc(var(--u) * 50%)); }
+html:not(.tcg) .proj[data-fx="cofre"] .ch { translate: 0 calc(var(--sk) * var(--v) * .9em); scale: 1 calc(.3 + .7 * var(--t)); }
+html:not(.tcg) .proj[data-fx="cofre"] > .panel { translate: none; scale: calc(.02 + .98 * var(--in, 1)) 1; }
+html:not(.tcg) .proj[data-fx="cofre"] .panel :is(dt, .tok) { translate: 0 calc(round(up, calc(var(--v) * 16px), 4px) * var(--sk)); }
+html:not(.tcg) .proj[data-fx="cofre"] > .links { translate: 0 calc(var(--u) * -30px); }
+html:not(.tcg) .proj[data-fx="cofre"] > .foot { translate: none; }
+html:not(.tcg) .proj[data-fx="cofre"] .foot > :first-child { translate: 0 calc(var(--u) * 16px); }
+html:not(.tcg) .proj[data-fx="cofre"] .foot > :last-child { translate: 0 calc(var(--u) * -16px); }
+
+/* reduced motion: a project card's parts only fade in, in the same order; nothing moves or wipes */
+@media (prefers-reduced-motion: reduce) {
+  html:not(.tcg) .proj > :not(.sheen), html:not(.tcg) .proj .ch, html:not(.tcg) .proj .panel :is(dt, .tok), html:not(.tcg) .proj .foot > * {
+    translate: none !important; rotate: none !important; scale: none !important; transform: none !important; clip-path: none !important;
+  }
+  html:not(.tcg) .proj > :not(.sheen, .name) { opacity: var(--in, 1) !important; }
+}
+
+/* icons: on the first card the squares spin into place one after another */
 @keyframes ico-in { from { opacity: 0; rotate: -180deg; scale: .2; } }
 html:not(.tcg) .grid .ico { animation: ico-in 500ms cubic-bezier(.16, 1, .3, 1) 300ms both; }
 html:not(.tcg) .grid .btn:nth-child(2) .ico { animation-delay: 360ms; }
@@ -622,9 +714,9 @@ html.no-enter .grid .ico, html.switched .grid .ico { animation: none; }
 .rail.scrolled .rail-hint { opacity: 0; }
 .rail.scrolled .rail-hint::after { animation-play-state: paused; }
 
-/* reduced motion, softer: letters and icons fade without moving; the bits stay put (gutter.js); the hint's line holds still */
+/* reduced motion, softer: the name and icons fade without moving; the bits stay put (gutter.js); the hint's line holds still */
 @media (prefers-reduced-motion: reduce) {
-  html:not(.tcg) .name .ch, html:not(.tcg) .deck-slot + .deck-slot .ico { translate: none; rotate: none; scale: none; }
+  html:not(.tcg) h1.name .ch { translate: none; rotate: none; scale: none; }
   html:not(.tcg) h1.name .ch, html:not(.tcg) .grid .ico { animation: fade 200ms ease-out both; }
   html.no-enter h1.name .ch, html.no-enter .grid .ico, html.switched h1.name .ch, html.switched .grid .ico { animation: none; }
   .btn:hover .ico { transform: none; }

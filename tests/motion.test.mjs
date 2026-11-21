@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { letterVars } from '../site/split.js';
 import { scatter, driftY } from '../site/gutter.js';
-import { titleAt } from '../site/reveal.js';
+import { focusAt, windowed } from '../site/reveal.js';
 import { STRINGS } from '../site/i18n.js';
 
 test('letterVars: index, distance from the middle letter, and its size', () => {
@@ -27,12 +27,20 @@ test('driftY: moves up with the scroll at its speed and wraps at the band height
   assert.equal(driftY(500, 0.5, 0), 0); // not measured yet
 });
 
-test('titleAt: 0 below the screen, 1 once 40% up from the bottom', () => {
-  assert.equal(titleAt(1000, 1000), 0);
-  assert.equal(titleAt(600, 1000), 1);
-  assert.equal(titleAt(0, 1000), 1);
-  const mid = titleAt(800, 1000);
-  assert.ok(mid > 0.5 && mid < 1, String(mid));
+test('focusAt: 0 far below or above, 1 once the card fills the screen, the same from either side', () => {
+  assert.equal(focusAt(1000, 1000, 1000), 0); // just below
+  assert.equal(focusAt(0, 1000, 1000), 1); // fills it
+  assert.equal(focusAt(-2000, 1000, 1000), 0); // gone above
+  assert.equal(focusAt(-400, 1400, 1000), 1); // a tall card still covering the screen
+  assert.equal(focusAt(300, 1000, 1000), focusAt(-300, 1000, 1000)); // from below and from above
+  const mid = focusAt(400, 1000, 1000);
+  assert.ok(mid > 0 && mid < 1, String(mid));
+});
+
+test('windowed: each block takes its share of the card progress', () => {
+  assert.equal(windowed(0.2, [0.3, 0.6]), 0);
+  assert.equal(windowed(0.45, [0.3, 0.6]).toFixed(2), '0.50');
+  assert.equal(windowed(0.9, [0.3, 0.6]), 1);
 });
 
 test('the index and its hint are translated', () => {

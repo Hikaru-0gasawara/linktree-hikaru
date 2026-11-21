@@ -30,3 +30,22 @@ export function splitLetters(el) {
   words.forEach((w, i) => { if (i) box.append(' '); box.append(letters(w, vars)); });
   el.replaceChildren(sr, box);
 }
+
+// A project's panel for its assembly (styles.css): the labels in order, then each value's words, numbered across the panel.
+//   --j  the piece's place (labels 0..2, then the words), --m  the number of pieces, on the panel
+// The words stay real text (only wrapped), so the panel reads the same to everyone.
+export function splitPanel(dl) {
+  let j = 0;
+  const dts = [...dl.querySelectorAll('dt')], dds = [...dl.querySelectorAll('dd')];
+  for (const dt of dts) dt.style.setProperty('--j', j++);
+  for (const dd of dds) {
+    const words = dd.textContent.split(' ').filter(Boolean);
+    dd.replaceChildren(...words.flatMap((w, i) => {
+      const t = Object.assign(document.createElement('span'), { className: 'tok', textContent: w });
+      t.style.setProperty('--j', j++);
+      return i ? [' ', t] : [t];
+    }));
+  }
+  dl.style.setProperty('--m', j);
+  return j;
+}

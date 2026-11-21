@@ -4,7 +4,7 @@ import { deckScale, fanLayout, fanPose } from './deck.js';
 import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
 import { initReveal } from './reveal.js';
-import { splitLetters } from './split.js';
+import { splitLetters, splitPanel } from './split.js';
 import { initGutter } from './gutter.js';
 
 let storage = null;
@@ -31,6 +31,7 @@ function apply(lang) {
   toggle.setAttribute('aria-label', s.tcgLabel);
   closeBtn.setAttribute('aria-label', s.close);
   for (const t of titles) splitLetters(t);
+  for (const card of projects) splitPanel(card.querySelector('.panel'));
   labelRail?.(lang);
   if (root.classList.contains('tcg')) labelCards(s);
 }
@@ -62,9 +63,15 @@ const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
 const track = document.querySelector('.deck-track');
-// title letters (split.js) move in plain mode; the project titles take turns between three ways in (styles.css)
+// plain mode: each project card assembles in its own way (reveal.js, styles.css by data-fx); its blocks are numbered (--b),
+// its title split into letters and its panel into pieces (split.js)
 const titles = [...document.querySelectorAll('h2.name[data-i18n]')];
-titles.forEach((t, i) => { t.dataset.fx = ['rise', 'spread', 'tilt'][i % 3]; });
+const projects = titles.map((t) => t.closest('.card'));
+for (const card of projects) {
+  card.classList.add('proj');
+  card.dataset.fx = card.closest('.deck-slot').dataset.card;
+  [...card.children].filter((el) => !el.classList.contains('sheen')).forEach((el, b) => el.style.setProperty('--b', b));
+}
 splitLetters(document.querySelector('h1.name'));
 let labelRail = null;
 
