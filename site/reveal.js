@@ -3,11 +3,13 @@
 //   --cin on each card after the first: 0..1 over its first 60% of a screen (the card is laid down straight)
 //   --out on each card: 0..1 as it scrolls out of the top (it settles back under the next)
 //   --par on each art window: -1..1 from the bottom of the screen to the top (its image drifts, a slow parallax)
+//   --tin on each card's title and links: 0..1 over the lower 40% of the screen, a longer run than --in, for their letters and icons
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
 const easeOut = (t) => 1 - (1 - t) ** 3;
 
 export const enterAt = (top, h, view) => easeOut(clamp01((view - top) / Math.max(Math.min(h, view / 2), 1)));
 export const leaveAt = (top, h) => clamp01(-top / Math.max(h, 1));
+export const titleAt = (top, view) => easeOut(clamp01((view - top) / (view * 0.4)));
 export const driftAt = (top, h, view) => Math.min(Math.max((top + h / 2 - view / 2) / (view / 2), -1), 1);
 
 export function initReveal(track) {
@@ -28,7 +30,11 @@ export function initReveal(track) {
         writes.push([card, '--cin', clamp01((view - top) / (view * 0.6))]);
         // a lazy image off to the side of a group's row only loads once scrolled into the row: load it as its card comes near
         if (top < view * 1.5) for (const img of card.querySelectorAll('img[loading="lazy"]')) img.loading = 'eager';
-        for (const el of card.children) if (!el.classList.contains('sheen')) writes.push([el, '--in', enterAt(top + el.offsetTop, el.offsetHeight, view)]);
+        for (const el of card.children) {
+          if (el.classList.contains('sheen')) continue;
+          writes.push([el, '--in', enterAt(top + el.offsetTop, el.offsetHeight, view)]);
+          if (el.matches('.name, .links')) writes.push([el, '--tin', titleAt(top + el.offsetTop, view)]);
+        }
       }
       for (const art of card.querySelectorAll('.art')) writes.push([art, '--par', driftAt(top + art.offsetTop, art.offsetHeight, view)]);
     });

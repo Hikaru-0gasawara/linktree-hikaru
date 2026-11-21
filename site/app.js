@@ -4,6 +4,8 @@ import { deckScale, fanLayout, fanPose } from './deck.js';
 import { initDeck } from './tcg-dom.js';
 import { initCritters } from './critters.js';
 import { initReveal } from './reveal.js';
+import { splitLetters } from './split.js';
+import { initGutter } from './gutter.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -28,6 +30,8 @@ function apply(lang) {
   document.querySelector('meta[name="description"]').content = s.metaDescription;
   toggle.setAttribute('aria-label', s.tcgLabel);
   closeBtn.setAttribute('aria-label', s.close);
+  for (const t of titles) splitLetters(t);
+  labelRail?.(lang);
   if (root.classList.contains('tcg')) labelCards(s);
 }
 
@@ -36,7 +40,7 @@ function apply(lang) {
 const labelCards = (s) => {
   for (const c of cards) {
     const slot = c.closest('.deck-slot'), key = c.closest('[data-label]')?.dataset.label;
-    let label = slot.dataset.card === 'hikaru' ? s.cardLabel : key ? s[key] : c.querySelector('.name').textContent;
+    let label = slot.dataset.card === 'hikaru' ? s.cardLabel : key ? s[key] : c.querySelector('.name .sr').textContent;
     if (isGroup(slot) && c === slot.querySelector('.tcg-card')) label += ` · ${s.groupHint.replace('{n}', slot.querySelectorAll('.tcg-card').length)}`;
     c.setAttribute('aria-label', label);
   }
@@ -57,14 +61,23 @@ const stage = document.querySelector('.tcg-stage');
 const front = document.querySelector('.face-front');
 const langEl = document.querySelector('.lang');
 const crittersEl = document.querySelector('.critters');
+const track = document.querySelector('.deck-track');
+// title letters (split.js) move in plain mode; the project titles take turns between three ways in (styles.css)
+const titles = [...document.querySelectorAll('h2.name[data-i18n]')];
+titles.forEach((t, i) => { t.dataset.fx = ['rise', 'spread', 'tilt'][i % 3]; });
+splitLetters(document.querySelector('h1.name'));
+let labelRail = null;
 
 const focused = () => root.classList.contains('deck-focus');
 // the whole deck shows one face; only a focused card turns on its own
 let back = false;
 const deckFace = () => (back ? [0, 1, 0, 0] : IDENTITY); // 180° about Y
 let group = null; // the open card group: { slot, items (.fan-item), ctl (one controller per card), sel (focused card or -1) }
-const fitNow = () => fit.style.setProperty('--s', focused() ? fitScale(innerWidth, innerHeight)
-  : group ? fanLayout(innerWidth, innerHeight, group.items.length).s : deckScale(innerWidth, innerHeight));
+const fitNow = () => {
+  fit.style.setProperty('--s', focused() ? fitScale(innerWidth, innerHeight)
+    : group ? fanLayout(innerWidth, innerHeight, group.items.length).s : deckScale(innerWidth, innerHeight));
+  root.style.setProperty('--ds', deckScale(innerWidth, innerHeight)); // the control bar follows the deck's card (styles.css)
+};
 
 // the head script already chose the mode; this syncs the DOM to it
 function setMode(on) {
@@ -88,11 +101,12 @@ function setMode(on) {
 }
 
 let current = loadLang(storage, navigator.languages);
+labelRail = initGutter(track, document.querySelector('.rail'), document.querySelector('.drift'), matchMedia('(prefers-reduced-motion: reduce)'));
 apply(current);
 setMode(root.classList.contains('tcg'));
 initCritters(crittersEl); // once, for both modes
-const deck = initDeck(document.querySelector('.deck-track'));
-initReveal(document.querySelector('.deck-track'));
+const deck = initDeck(track);
+initReveal(track);
 const turnAll = () => { for (const c of deck.controllers) c.turnTo(deckFace()); };
 // Flip and Reset act on the focused card; with a group's fan open, on all of its cards; otherwise on the whole deck
 const focusedCtl = () => (group ? group.ctl[group.sel] : deck.controllers[deck.current()]);
@@ -105,6 +119,7 @@ resetBtn.addEventListener('click', () => {
 toggle.addEventListener('click', () => {
   const on = !root.classList.contains('tcg');
   saveTcg(storage, on); // only an explicit choice is stored, so the pointer default keeps applying otherwise
+  root.classList.add('switched'); // the plain name's letters and icons came in at load; a mode switch doesn't replay them
   setMode(on);
 });
 
