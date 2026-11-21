@@ -553,9 +553,17 @@ html:not(.tcg) .proj > :not(.sheen) {
   opacity: var(--in, 1);
 }
 html:not(.tcg) .proj > .name { opacity: 1; }
+/* held: the card's holder is a screen taller than it, and the card stays put (sticky) while that extra screen scrolls by, so it
+   finishes assembling where it will be read. The track is the size container, so the card is still exactly a screen tall. */
+html:not(.tcg) .deck-track { container-type: size; }
+html:not(.tcg) .tcg-card.pin { display: block; }
+html:not(.tcg) .tcg-card.pin::after { content: ''; display: block; height: 100cqh; }
+html:not(.tcg) .proj { position: sticky; top: 0; min-height: 100cqh; }
+/* the image as wide as the card's text, not a small window in the middle */
+html:not(.tcg) .proj > .art { width: 100%; height: auto; aspect-ratio: 1.6; }
 html:not(.tcg) .proj .name :is(.letters, .w, .ch) { --in: inherit; }
 html:not(.tcg) .proj .name .ch {
-  --t: clamp(0, (var(--in, 1) - var(--k) / var(--n) * .6) / .4, 1);
+  --t: clamp(0, (var(--in, 1) - var(--k) / var(--n) * .5) / .5, 1);
   --v: calc(1 - var(--t));
   --sk: calc(mod(var(--k), 2) * 2 - 1);
   opacity: var(--t);
@@ -575,6 +583,7 @@ html:not(.tcg) .proj[data-fx="portfolio"] > :not(.sheen, .name, .art) {
   opacity: round(down, var(--in, 1), .25);
 }
 html:not(.tcg) .proj[data-fx="portfolio"] > .art { opacity: 1; clip-path: inset(0 0 calc(round(up, var(--u), .125) * 100%) 0); }
+html:not(.tcg) .proj[data-fx="portfolio"] > .art img { scale: calc(1.12 + round(up, var(--u), .125) * .9); }
 html:not(.tcg) .proj[data-fx="portfolio"] .ch { translate: 0 calc(round(up, calc(var(--v) * 1.2em), .2em) * -1); opacity: round(up, var(--t), 1); }
 html:not(.tcg) .proj[data-fx="portfolio"] > .panel { opacity: 1; translate: none; clip-path: inset(0 calc(round(up, var(--u), .125) * 100%) 0 0); }
 html:not(.tcg) .proj[data-fx="portfolio"] .panel :is(dt, .tok) { scale: round(up, var(--t), .25); opacity: round(up, var(--t), 1); }
@@ -588,6 +597,7 @@ html:not(.tcg) .proj[data-fx="aquasense"] > :not(.sheen, .name, .art) {
   translate: calc(sin(calc(var(--u) * 360deg)) * var(--sd) * 10px) calc(var(--u) * 48px);
 }
 html:not(.tcg) .proj[data-fx="aquasense"] > .art { opacity: 1; clip-path: inset(calc(var(--u) * 100%) 0 0 0); }
+html:not(.tcg) .proj[data-fx="aquasense"] > .art img { translate: 0 calc(var(--par, 0) * 5% + var(--u) * 35%); scale: calc(1.12 + var(--u) * .25); }
 html:not(.tcg) .proj[data-fx="aquasense"] .ch {
   translate: calc(sin(calc(var(--v) * 540deg + var(--k) * 40deg)) * .15em) calc(var(--v) * 1.4em);
   scale: calc(.4 + .6 * var(--t));
@@ -601,6 +611,7 @@ html:not(.tcg) .proj[data-fx="ecos"] > :not(.sheen, .name, .art) {
   opacity: calc(var(--in, 1) * (.55 + .45 * pow(cos(calc(var(--u) * 1440deg)), 2)));
 }
 html:not(.tcg) .proj[data-fx="ecos"] > .art { opacity: 1; clip-path: inset(calc(var(--u) * 49.5%) 0); }
+html:not(.tcg) .proj[data-fx="ecos"] > .art img { scale: 1.12 calc(1.12 + var(--u) * 1.6); filter: brightness(calc(1 + var(--u) * 2.5)); }
 html:not(.tcg) .proj[data-fx="ecos"] .ch { translate: calc(var(--sk) * var(--v) * .8em) 0; transform: skewX(calc(var(--sk) * var(--v) * 30deg)); }
 html:not(.tcg) .proj[data-fx="ecos"] > .panel { translate: none; transform: none; scale: 1 calc(.02 + .98 * var(--in, 1)); }
 html:not(.tcg) .proj[data-fx="ecos"] .panel :is(dt, .tok) { translate: calc(var(--sk) * var(--v) * 24px) 0; }
@@ -611,6 +622,7 @@ html:not(.tcg) .proj[data-fx="ecos"] .foot > :last-child { translate: calc(var(-
 /* Ferrovia, trains: everything pulls in from the right and brakes, the letters as wagons, the back ones from farther */
 html:not(.tcg) .proj[data-fx="ferrovia"] > :not(.sheen, .name, .art) { translate: calc(var(--u) * var(--u) * min(45vw, 360px)) 0; }
 html:not(.tcg) .proj[data-fx="ferrovia"] > .art { opacity: 1; clip-path: inset(0 0 0 calc(var(--u) * 100%)); }
+html:not(.tcg) .proj[data-fx="ferrovia"] > .art img { translate: calc(var(--u) * 45%) calc(var(--par, 0) * 5%); scale: calc(1.12 + var(--u) * .2); }
 html:not(.tcg) .proj[data-fx="ferrovia"] .ch { translate: calc(var(--v) * (3em + var(--k) * .4em)) 0; }
 html:not(.tcg) .proj[data-fx="ferrovia"] .panel :is(dt, .tok) { translate: calc(var(--v) * 30px) 0; }
 
@@ -621,6 +633,7 @@ html:not(.tcg) .proj[data-fx="fabio"] > :not(.sheen, .name, .art) {
   scale: calc(.85 + .15 * var(--in, 1));
 }
 html:not(.tcg) .proj[data-fx="fabio"] > .art { opacity: 1; clip-path: circle(calc(var(--in, 1) * 100%) at 30% 40%); }
+html:not(.tcg) .proj[data-fx="fabio"] > .art img { scale: calc(1.12 + var(--u) * 1.3); rotate: calc(var(--u) * -30deg); }
 html:not(.tcg) .proj[data-fx="fabio"] .ch {
   translate: calc(cos(calc(var(--k) * 97deg)) * var(--v) * 1.2em) calc(sin(calc(var(--k) * 97deg)) * var(--v) * 1.2em);
   rotate: calc(var(--d) * var(--v) * 40deg);
@@ -633,6 +646,7 @@ html:not(.tcg) .proj[data-fx="fabio"] .panel :is(dt, .tok) {
 /* Cofre, a safe: the image opens like vault doors, the letters roll in like a combination dial, the pieces click into place */
 html:not(.tcg) .proj[data-fx="cofre"] > :not(.sheen, .name, .art) { translate: 0 calc(var(--sd) * var(--u) * 40px); }
 html:not(.tcg) .proj[data-fx="cofre"] > .art { opacity: 1; clip-path: inset(0 calc(var(--u) * 50%)); }
+html:not(.tcg) .proj[data-fx="cofre"] > .art img { scale: calc(1.12 + var(--u) * .6); }
 html:not(.tcg) .proj[data-fx="cofre"] .ch { translate: 0 calc(var(--sk) * var(--v) * .9em); scale: 1 calc(.3 + .7 * var(--t)); }
 html:not(.tcg) .proj[data-fx="cofre"] > .panel { translate: none; scale: calc(.02 + .98 * var(--in, 1)) 1; }
 html:not(.tcg) .proj[data-fx="cofre"] .panel :is(dt, .tok) { translate: 0 calc(round(up, calc(var(--v) * 16px), 4px) * var(--sk)); }
@@ -646,6 +660,7 @@ html:not(.tcg) .proj[data-fx="cofre"] .foot > :last-child { translate: 0 calc(va
   html:not(.tcg) .proj > :not(.sheen), html:not(.tcg) .proj .ch, html:not(.tcg) .proj .panel :is(dt, .tok), html:not(.tcg) .proj .foot > * {
     translate: none !important; rotate: none !important; scale: none !important; transform: none !important; clip-path: none !important;
   }
+  html:not(.tcg) .proj > .art img { translate: none !important; rotate: none !important; scale: 1.12 !important; filter: none !important; }
   html:not(.tcg) .proj > :not(.sheen, .name) { opacity: var(--in, 1) !important; }
 }
 

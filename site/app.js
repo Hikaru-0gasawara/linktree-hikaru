@@ -69,6 +69,7 @@ const titles = [...document.querySelectorAll('h2.name[data-i18n]')];
 const projects = titles.map((t) => t.closest('.card'));
 for (const card of projects) {
   card.classList.add('proj');
+  card.parentElement.classList.add('pin');
   card.dataset.fx = card.closest('.deck-slot').dataset.card;
   [...card.children].filter((el) => !el.classList.contains('sheen')).forEach((el, b) => el.style.setProperty('--b', b));
 }
