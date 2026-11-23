@@ -23,13 +23,11 @@ export function scatter(seed, counts) {
 // the deck's offset for a layer moving at `speed` of the scroll, wrapped to the band height
 export const driftY = (scroll, speed, h) => (h > 0 ? -((scroll * speed) % h) : 0);
 
-// a project card by its title; a card with data-rail by that key; Hikaru's Magic card and the groups by their place among the groups
-const railName = (slot, s, groups) => {
+// a project card by its title; the Magic group by its top card, Hikaru's Magic business card (the only one plain mode shows)
+const railName = (slot, s) => {
   const key = slot.querySelector('h2.name[data-i18n]')?.dataset.i18n;
   if (key) return s[key];
-  if (slot.dataset.card === 'hikaru') return 'Hikaru';
-  if (slot.dataset.rail) return s[slot.dataset.rail];
-  return groups.includes(slot) ? s.railGroup.replace('{n}', groups.indexOf(slot) + 1) : s.railMtg;
+  return slot.dataset.card === 'hikaru' ? 'Hikaru' : s.railMtg;
 };
 
 export function initGutter(track, rail, drift, reduced) {
@@ -88,8 +86,6 @@ export function initGutter(track, rail, drift, reduced) {
     buttons.forEach((b, j) => (j === i ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current')));
     // the list's rows are all one height (styles.css), so the marker's place is arithmetic, not a read of the layout
     mark.style.translate = `0 calc(${i + 0.5} * var(--row))`;
-    // a group's row is as wide as the screen: the sides step back while it shows
-    root.classList.toggle('row-view', slots[i].hasAttribute('data-group'));
   }
   const schedule = () => { raf ||= requestAnimationFrame(update); };
   const remeasure = () => { measure(); current = -1; schedule(); };
@@ -105,8 +101,7 @@ export function initGutter(track, rail, drift, reduced) {
     const s = STRINGS[lang];
     rail.setAttribute('aria-label', s.railLabel);
     hint.textContent = s.scrollHint;
-    const groups = slots.filter((sl) => sl.hasAttribute('data-group'));
-    buttons.forEach((b, i) => { b.textContent = railName(slots[i], s, groups); });
+    buttons.forEach((b, i) => { b.textContent = railName(slots[i], s); });
     current = -1;
     schedule();
   };

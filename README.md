@@ -17,10 +17,11 @@ runtime dependencies. Live at https://hikaru-card.vercel.app/.
     saved in `localStorage`. In this mode Hikaru's card and the project cards wear a **Magic frame**: a frame image per
     card in a vintage newspaper style ("The Hikaru Herald"), in its own colours, generated with Higgsfield from one geometry (`design/magic-frame`), with every word still
     live text and every button a real link laid on the frame's plaques (see `docs/adr/0001`).
-- **Card groups**: three Magic cards that share one place in the deck, shown as a pack with a ×3 badge. Click it to open
-  the three as a fan, like a hand of cards.
+- **The Magic group**: every Magic-format card shares the last place in the deck. In TCG mode it is a pack with a ×13 badge;
+  click it to open all of them as a fan, like a hand of cards. Plain mode shows only its top card, Hikaru's Magic business card.
 - **Three languages**: Português, English and 日本語, from the switch at the top. The choice is saved. Every text, label,
-  image description and the résumé link follow it (`i18n.js`).
+  image description and the résumé link follow it (`i18n.js`). On a switch, each visible character runs through random
+  characters of its kind and settles on the new language's (`scramble.js`); with reduced motion the text just fades.
 - **Critters**: original pixel-art animals walking along the ground in both modes (`critters.js`).
 - **Accessibility**: real links and buttons, alt text in all three languages for every card image, and reduced-motion support
   (no tilts or swings).
@@ -32,21 +33,20 @@ runtime dependencies. Live at https://hikaru-card.vercel.app/.
 1. **Hikaru's card**: contacts (e-mail, LinkedIn, GitHub, résumé), focus, languages and an About section.
 2. **Project cards**: Portfolio, AquaSense, ECOS, Ferrovia, Procurando o Fábio and the IoT safe. A new project goes after
    the last one.
-3. **Magic-format cards**, always last:
-   1. Hikaru's original Magic business card (`mtg-hikaru`).
+3. **Magic-format cards**, always last, all in one group (`data-card="magic"`), in this order:
+   1. Hikaru's original Magic business card (`mtg-hikaru`), on top of the pack and the only one plain mode shows.
    2. The other Magic business cards: Archengineer, Wanted and Pulp (`mtg-card-*`), each with the "how to summon" back.
    3. Single Magic cards: Kōgen, Archengineer Prompter · Kōgen, Rogue Engineer · Kōgen, Grand Artificer (`mtg-archengineer`,
       `mtg-wanted`, `mtg-pulp`). They have no back art of their own, so they use the site's standard card back.
-   4. Card groups: `grupo-1` (Kōgen, Keeper of the Root · Pedro and Júlia, Open Case · Claude, the Unbearable Mind) and
-      `grupo-2` (Kōgen, Arcanist of the Root · Pedro and Júlia, Kindred Minds · Kōshin, the Root Disc). A new group goes
-      after the last one.
+   4. The sets of three: Kōgen, Keeper of the Root · Pedro and Júlia, Open Case · Claude, the Unbearable Mind, then Kōgen,
+      Arcanist of the Root · Pedro and Júlia, Kindred Minds · Kōshin, the Root Disc. A new set goes after the last one.
 
 ### Adding a Magic card
 
 1. Put the front (and back, if it has one) in `site/img/` as `.webp`, 920 px wide, with the phone number removed (see below).
-2. Copy a slot of the same kind in `site/index.html`: a single card is a `.deck-slot` with `data-label`, `data-rail` and a
-   `.card.face-front.mtg`; a group is a `.deck-slot[data-group]` with three `.fan-item`s.
-3. Add the keys it names (`…Label`, `…Alt`, `…BackAlt`, `…Rail`) to **all three** languages in `site/i18n.js`.
+2. Copy a `.fan-item` of the Magic group in `site/index.html` to its place in the order, number the `--i` of every card
+   again from 0 and raise the ×N badge.
+3. Add the keys it names (`…Label`, `…Alt`, `…BackAlt`) to **all three** languages in `site/i18n.js`.
 4. Update the order list and the alt-text count in `tests/page.test.mjs`, then run `npm test`.
 
 ## The phone number stays off the site
@@ -71,8 +71,9 @@ originals in the Data Vault keep it.
 site/                  everything that is served
   index.html           the deck markup; an inline script sets the mode before first paint
   styles.css           both modes, the motion, the card faces
-  app.js               start-up: language, mode switch, labels, groups, wires the modules below
+  app.js               start-up: language, mode switch, labels, the Magic group, wires the modules below
   i18n.js              STRINGS for pt / en / ja, language choice, age, résumé URL
+  scramble.js          the language switch: characters scrambling into the new language
   deck.js              pure deck math: card poses, spring, fan layout
   tcg.js / tcg-dom.js  3D card rotation (quaternions) and the TCG-mode deck in the page
   pager.js             plain mode: one card per gesture

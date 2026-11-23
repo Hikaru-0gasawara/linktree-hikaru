@@ -555,37 +555,27 @@ html.tcg .mtg-art, html.tcg .face-back.mtg img { position: absolute; inset: 0; w
 html.tcg .deck-slot[data-group] { transform-style: flat; }
 html.tcg .fan-item {
   display: block; position: absolute; inset: 0; perspective: 1200px; transform-origin: 50% 100%;
-  transform: translate(calc(var(--i) * 7px), calc(var(--i) * -7px)) rotate(calc(var(--i) * 2.5deg));
-  z-index: calc(10 - var(--i));
+  --pk: min(var(--i), 3); /* the closed pack: the top card and three peeking out behind it, however many it holds */
+  transform: translate(calc(var(--pk) * 7px), calc(var(--pk) * -7px)) rotate(calc(var(--pk) * 2.5deg));
+  z-index: calc(20 - var(--i));
   transition: transform 450ms cubic-bezier(.32, .72, 0, 1), opacity 250ms ease-out;
 }
-html.group-open .deck-slot.open .fan-item { transform: translate(var(--fx), var(--fy)) rotate(var(--fr)); z-index: calc(10 + var(--i)); }
+html.group-open .deck-slot.open .fan-item { transform: translate(var(--fx), var(--fy)) rotate(var(--fr)); z-index: calc(20 + var(--i)); }
 @media (hover: hover) and (pointer: fine) {
-  html.group-open:not(.deck-focus) .deck-slot.open .fan-item:hover { transform: translate(var(--fx), calc(var(--fy) - 4%)) rotate(var(--fr)); z-index: 30; }
+  html.group-open:not(.deck-focus) .deck-slot.open .fan-item:hover { transform: translate(var(--fx), calc(var(--fy) - 4%)) rotate(var(--fr)); z-index: 60; }
 }
-html.group-open .deck-slot.open .fan-item.sel { transform: none; z-index: 40; }
+html.group-open .deck-slot.open .fan-item.sel { transform: none; z-index: 70; }
 html.deck-focus .fan-item[inert] { opacity: 0; }
 html.group-open .deck-slot:not(.open) { opacity: 0 !important; } /* over the inline pose, like focus mode */
 /* the pack's count, a small chip on its top-right corner */
 html.tcg .group-badge {
-  display: block; position: absolute; z-index: 20; top: -10px; right: -14px; padding: 2px 7px;
+  display: block; position: absolute; z-index: 40; top: -10px; right: -14px; padding: 2px 7px;
   background: var(--raised); border: 1px solid var(--hair2); color: var(--paper); font-size: 13px; letter-spacing: .04em;
   transition: opacity 200ms ease-out;
 }
 html.group-open .group-badge { opacity: 0; }
-/* plain mode: a group is a row of its cards, side by side where they fit, swiped through on a phone */
-html:not(.tcg) .deck-slot[data-group] {
-  display: flex; align-items: center; justify-content: safe center; gap: 16px; min-height: 100%;
-  padding-inline: 16px; overflow: auto hidden; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory; scrollbar-width: none;
-}
-html:not(.tcg) .deck-slot[data-group]::-webkit-scrollbar { display: none; }
-html:not(.tcg) .deck-slot[data-group] .card { flex: none; width: min(360px, 80vw); min-height: 0; margin: 0; padding: 18px 0 24px; scroll-snap-align: center; }
-/* phones: one card at a time, centred, with the next one peeking in so the row reads as swipeable */
-@media (max-width: 700px) {
-  html:not(.tcg) .deck-slot[data-group] { padding-inline: 14vw; }
-  html:not(.tcg) .deck-slot[data-group] .card { width: 72vw; }
-}
+/* plain mode: the Magic group shows only its top card, Hikaru's Magic business card, as a single card */
+html:not(.tcg) .fan-item:not(:first-of-type) { display: none; }
 /* plain mode: the printed front, as tall as the screen allows */
 html:not(.tcg) .mtg-art {
   display: block; margin: 0 auto; width: auto; max-width: 100%; height: auto;
@@ -655,9 +645,10 @@ html:not(.tcg) .proj > :not(.sheen) {
   opacity: var(--in, 1);
 }
 html:not(.tcg) .proj > .name { opacity: 1; }
-/* one card per scroll: every card (a group, its row) is a stop the page cannot skip */
+/* one card per scroll: every card shown is a stop the page cannot skip */
 html:not(.tcg) .deck-track { scroll-snap-type: y mandatory; }
-html:not(.tcg) .deck-slot:not([data-group]) > .tcg-card > .face-front, html:not(.tcg) .deck-slot[data-group] { scroll-snap-align: start; scroll-snap-stop: always; }
+html:not(.tcg) .deck-slot > .tcg-card > .face-front,
+html:not(.tcg) .deck-slot > .fan-item:first-of-type > .tcg-card > .face-front { scroll-snap-align: start; scroll-snap-stop: always; }
 @keyframes assemble { from { --p: 0; } to { --p: 1; } }
 html:not(.tcg) .proj { --p: 0; }
 html:not(.tcg) .proj.assemble { animation: assemble calc(1600ms * var(--slow)) linear both; }
@@ -797,8 +788,6 @@ html.switched .grid .ico { animation: none; }
 .rail, .drift { display: none; }
 @media (min-width: 1040px) {
   html:not(.tcg) .rail, html:not(.tcg) .drift { display: block; transition: opacity 300ms var(--ease), visibility 0s; }
-  /* a group's row is as wide as the screen: the sides step back while it shows */
-  html.row-view .rail, html.row-view .drift { opacity: 0; visibility: hidden; transition: opacity 300ms var(--ease), visibility 0s 300ms; }
   html:not(.tcg) .drift {
     position: fixed; inset: 0 0 calc(var(--ground-h) + var(--lane) + env(safe-area-inset-bottom, 0px)); overflow: hidden; pointer-events: none;
     -webkit-mask-image: linear-gradient(transparent, #000 48px, #000 calc(100% - 24px), transparent);

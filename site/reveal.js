@@ -48,8 +48,6 @@ export function initReveal(track) {
           else card.classList.remove('assemble');
         }
       }
-      // a lazy image off to the side of a group's row only loads once scrolled into the row: load it as its card comes near
-      if (i > 0 && top < view * 1.5) for (const img of card.querySelectorAll('img[loading="lazy"]')) img.loading = 'eager';
       if (i > 0 && !card.classList.contains('proj')) {
         writes.push([card, '--cin', clamp01((view - top) / (view * 0.6))]);
         for (const el of card.children) {

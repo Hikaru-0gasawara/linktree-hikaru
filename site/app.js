@@ -7,6 +7,7 @@ import { initReveal } from './reveal.js';
 import { splitLetters, splitPanel } from './split.js';
 import { initGutter } from './gutter.js';
 import { initPager } from './pager.js';
+import { scramble } from './scramble.js';
 
 let storage = null;
 try { storage = window.localStorage; } catch {}
@@ -217,15 +218,25 @@ addEventListener('keydown', (e) => {
 let raf = 0;
 addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; fitNow(); if (group) layoutFan(); if (focused() || group) deck.lockPaging(true); }); });
 
-// 75ms fade out, swap, 75ms fade in. A click mid-fade restarts the timer, which always clears the class.
-let timer;
+// The visible text scrambles into the new language (scramble.js); a click mid-scramble finishes it and starts the next.
+// With reduced motion: 75ms fade out, swap, 75ms fade in; a click mid-fade restarts the timer, which always clears the class.
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const TEXT = '[data-i18n], #ageSuffix, #skills, .rail button, .rail-hint';
+let timer, stopScramble = () => {};
 function switchTo(lang) {
   if (lang === current) return;
   current = lang;
   saveLang(storage, lang);
-  const root = document.documentElement;
-  root.classList.add('swapping');
-  clearTimeout(timer);
-  timer = setTimeout(() => { apply(lang); root.classList.remove('swapping'); }, 75);
+  if (reduced.matches) {
+    root.classList.add('swapping');
+    clearTimeout(timer);
+    timer = setTimeout(() => { apply(lang); root.classList.remove('swapping'); }, 75);
+    return;
+  }
+  stopScramble();
+  const els = [...document.querySelectorAll(TEXT)].filter((el) => el.getClientRects().length);
+  const before = els.map((el) => el.textContent);
+  apply(lang);
+  stopScramble = scramble(els, before);
 }
 for (const b of document.querySelectorAll('[data-lang]')) b.addEventListener('click', () => switchTo(b.dataset.lang));

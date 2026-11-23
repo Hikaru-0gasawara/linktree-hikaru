@@ -16,7 +16,7 @@ export function pageTarget(stops, y, view, dir, max) {
 
 export function initPager(track, reduced) {
   const root = document.documentElement;
-  const targets = [...track.querySelectorAll('.deck-slot:not([data-group]) > .tcg-card > .face-front, .deck-slot[data-group]')];
+  const targets = [...track.querySelectorAll('.deck-slot > .tcg-card > .face-front, .deck-slot > .fan-item:first-of-type > .tcg-card > .face-front')];
   let last = 0, lockUntil = 0;
   const stopsNow = () => targets.map((el) => el.offsetTop); // layout offsets (the track is their offsetParent), not client rects:
   // a leaving card is scaled down (reveal.js)

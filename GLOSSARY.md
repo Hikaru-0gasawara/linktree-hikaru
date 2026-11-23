@@ -23,9 +23,10 @@ _Avoid_: Cartão de visita (when writing in English), MTG card
 **Single Magic card**:
 A Magic-style card shown on its own that is not a business card, such as the Kōgen cards.
 
-**Card group**:
-Three Magic-style cards sharing one place in the deck, opened as a fan.
-_Avoid_: Trio, pack, set
+**Magic group**:
+Every Magic-format card (business cards, single cards, the sets of three) sharing the deck's last place, opened as a fan;
+Hikaru's Magic business card is on top, and plain mode shows only that one.
+_Avoid_: Card group (there is only one now), trio, pack
 
 **Soft skills**:
 The short personal traits shown as chips on Hikaru's card, limited to two rows.
