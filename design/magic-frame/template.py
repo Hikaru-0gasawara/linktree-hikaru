@@ -1,20 +1,22 @@
 # The Magic frame's geometry, drawn flat for Higgsfield to finish (docs/adr/0001). One template per card: the boxes are the
 # same on every card (site/styles.css places the live text in them), the placeholder text and colour differ.
 # usage: python design/magic-frame/template.py <card> <out.png> [--blank]
-#   --blank: the same geometry with every text area empty and the art window plain, for the frame the site uses
+#   --blank: the same geometry with every text area empty, the plaques blank and the art window plain: the frame the site uses
 import sys
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 736, 1024          # Higgsfield size (multiples of 16), the card's 460x642 proportion
 S = W / 460               # card px -> template px
 # the geometry, in card px (460x642); keep in sync with the .mframe rules in site/styles.css
+# proportions of a real Magic card (modern frame): title bar at 4-9 % of the height, art window 10-55 % (about 1.4:1),
+# type line 56-61 %, text box 62-91 %, the power/toughness box over the text box's bottom right corner
 GEO = {
-    'title': (18, 16, 442, 50),
-    'art': (22, 54, 438, 254),
-    'type': (18, 258, 442, 284),
-    'text': (22, 288, 438, 598),
-    'pt': (366, 580, 440, 610),   # Hikaru's card only
-    'collector': (18, 606, 442, 630),
+    'title': (22, 24, 438, 58),
+    'art': (30, 64, 430, 350),
+    'type': (22, 356, 438, 388),
+    'text': (28, 394, 432, 586),
+    'pt': (354, 570, 440, 604),   # Hikaru's card only
+    'collector': (22, 606, 438, 634),
 }
 CARDS = {
     'hikaru': dict(color='gold', name='Hikaru Ogasawara', mana='W U B R G', pt='*/*',
@@ -63,26 +65,27 @@ def draw(card, blank):
     d.rectangle(box('art'), fill=(40, 40, 44), outline=(20, 18, 16), width=3)
     d.rectangle(box('text'), fill=(240, 232, 212), outline=(40, 34, 28), width=2)
     if c.get('pt'): d.rounded_rectangle(box('pt'), radius=round(6 * S), fill=(236, 228, 206), outline=(40, 34, 28), width=2)
-    if blank:
-        return im
     x0, y0, x1, y1 = box('title')
-    d.text((x0 + 10, (y0 + y1) / 2), c['name'], font=font(20, True), fill=(20, 16, 12), anchor='lm')
-    d.text((x1 - 10, (y0 + y1) / 2), c['mana'], font=font(13, True), fill=(20, 16, 12), anchor='rm')
-    x0, y0, x1, y1 = box('art'); d.text(((x0 + x1) / 2, (y0 + y1) / 2), 'ART', font=font(18), fill=(120, 120, 128), anchor='mm')
-    x0, y0, x1, y1 = box('type'); d.text((x0 + 10, (y0 + y1) / 2), c['type'], font=font(11.5, True), fill=(20, 16, 12), anchor='lm')
+    if not blank: d.text((x0 + 10, (y0 + y1) / 2), c['name'], font=font(20, True), fill=(20, 16, 12), anchor='lm')
+    if not blank: d.text((x1 - 10, (y0 + y1) / 2), c['mana'], font=font(13, True), fill=(20, 16, 12), anchor='rm')
+    x0, y0, x1, y1 = box('art')
+    if not blank: d.text(((x0 + x1) / 2, (y0 + y1) / 2), 'ART', font=font(18), fill=(120, 120, 128), anchor='mm')
+    x0, y0, x1, y1 = box('type')
+    if not blank: d.text((x0 + 10, (y0 + y1) / 2), c['type'], font=font(11.5, True), fill=(20, 16, 12), anchor='lm')
     x0, y0, x1, y1 = box('text'); y = y0 + 14
-    for ln in c['lines']:
+    for ln in ([] if blank else c['lines']):
         d.text((x0 + 14, y), ln, font=font(11.5), fill=(28, 22, 16)); y += round(19 * S)
     right = box('pt')[0] - 12 if c.get('pt') else x1 - 14  # the row stops short of the P/T box
     n = c.get('slots', 4)  # plaque width: a quarter of the row on Hikaru's card, a third on a project
     bw = (right - x0 - 14 - (n - 1) * 10) / n
     for i, b in enumerate(c['buttons']):
         bx = x0 + 14 + i * (bw + 10)
-        d.rounded_rectangle((bx, y1 - 60, bx + bw, y1 - 22), radius=8, fill=(210, 196, 160), outline=(60, 48, 30), width=2)
-        d.text((bx + bw / 2, y1 - 41), b, font=font(11, True), fill=(28, 22, 16), anchor='mm')
-    if c.get('pt'):
+        d.rounded_rectangle((bx, y1 - 56, bx + bw, y1 - 16), radius=8, fill=(210, 196, 160), outline=(60, 48, 30), width=2)
+        if not blank: d.text((bx + bw / 2, y1 - 41), b, font=font(11, True), fill=(28, 22, 16), anchor='mm')
+    if c.get('pt') and not blank:
         x0, y0, x1, y1 = box('pt'); d.text(((x0 + x1) / 2, (y0 + y1) / 2), c['pt'], font=font(15, True), fill=(20, 16, 12), anchor='mm')
-    x0, y0, x1, y1 = box('collector'); d.text((x0 + 4, (y0 + y1) / 2), c['collector'], font=font(9), fill=(230, 224, 210), anchor='lm')
+    x0, y0, x1, y1 = box('collector')
+    if not blank: d.text((x0 + 4, (y0 + y1) / 2), c['collector'], font=font(9), fill=(230, 224, 210), anchor='lm')
     return im
 
 if __name__ == '__main__':
