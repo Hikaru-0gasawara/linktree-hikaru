@@ -23,11 +23,12 @@ export function scatter(seed, counts) {
 // the deck's offset for a layer moving at `speed` of the scroll, wrapped to the band height
 export const driftY = (scroll, speed, h) => (h > 0 ? -((scroll * speed) % h) : 0);
 
-// a project card by its title; the Magic cards as Hikaru's and the groups by their place among the groups
+// a project card by its title; a card with data-rail by that key; Hikaru's Magic card and the groups by their place among the groups
 const railName = (slot, s, groups) => {
   const key = slot.querySelector('h2.name[data-i18n]')?.dataset.i18n;
   if (key) return s[key];
   if (slot.dataset.card === 'hikaru') return 'Hikaru';
+  if (slot.dataset.rail) return s[slot.dataset.rail];
   return groups.includes(slot) ? s.railGroup.replace('{n}', groups.indexOf(slot) + 1) : s.railMtg;
 };
 
