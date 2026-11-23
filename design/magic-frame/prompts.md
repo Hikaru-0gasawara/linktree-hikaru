@@ -48,3 +48,31 @@ ECOS black, Ferrovia white-red, Procurando o Fábio blue-black, IoT Safe colourl
 
 The boxes of each frame were read with `measure.py` (scan-line runs) and the plaques from zoomed crops; they are the
 per-card variables at the top of the Magic frame block in site/styles.css.
+
+## Real Magic proportions (second geometry)
+
+The first frames had a wide, short art window (2.4:1) and a text box half the card tall. `template.py` now follows a real
+Magic card (title bar 4-9 % of the height, art window 10-55 % at about 1.4:1, type line 56-61 %, text box 62-91 %, P/T box
+over the text box's corner). Each frame was regenerated in one pass from the blank template (`template.py <card> <out>
+--blank`, which keeps the plaques) plus the card's previous frame as the style reference:
+
+```
+Dress image 1 in exactly the frame of image 2: the same materials, colours, ornaments, engraving and finish, the same
+{MANA} at the right end of the title bar and the same small gem at the right end of the type line. Image 1 is a strict
+layout with the proportions of a real Magic: The Gathering card: keep every box exactly where it is and the same size [...].
+Every text area is empty [...]; the plaques are empty engraved shapes; the art window is a plain flat dark rectangle.
+```
+
+| card | frame job (current) |
+|---|---|
+| hikaru | 758a2de1-e23e-4b44-b22d-edf86a0fce40 |
+| portfolio | 3db562d9-a403-428b-9a2d-ec5d7a703edc |
+| aquasense | 1ac54a3b-dfce-42ca-9fad-1ce9742e4370 |
+| ecos | cb897e36-732c-4fa3-a0b8-8808cfd8d571 |
+| ferrovia | e549b089-870d-4130-89ac-214cb42de9f2 |
+| fabio | 9f707c9c-8bc6-4319-ba44-95ab4cb41db6 |
+| cofre | 1a5f7068-b89b-4573-a50d-caf4bc2159a3 |
+
+ECOS, Ferrovia and IoT Safe came back with a somewhat shorter art window (about 1.55:1); the CSS follows each frame's
+own measured boxes, so they are kept. The `-full.webp` references above are from the first geometry: they still show the
+typography, not the proportions.
