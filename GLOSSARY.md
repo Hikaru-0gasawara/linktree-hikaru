@@ -42,7 +42,7 @@ The scrolling way of browsing, one card per gesture, the default on touch screen
 _Avoid_: Scroll mode, mobile mode
 
 **Magic frame**:
-The Magic: The Gathering–style card front (border, title bar, art window, type line, text box, collector line) that replaces the look of Hikaru's card and of every project card, present and future, in TCG mode. The card keeps all of its content.
+The Magic: The Gathering–style card front in the vintage newspaper showcase style (masthead with the mana cost, headline bar, art window, type line, text box, collector strip) that replaces the look of Hikaru's card and of every project card, present and future, in TCG mode. The card keeps all of its content.
 _Avoid_: Skin, theme
 
 **Color identity**:

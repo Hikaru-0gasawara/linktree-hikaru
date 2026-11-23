@@ -15,7 +15,7 @@ runtime dependencies. Live at https://hikaru-card.vercel.app/.
     Drag to turn it, **Flip** to see its back, **Reset** to straighten it. Scrolling leafs through the deck: the top card
     arcs away onto the passed pile and the next swings in from under it (`tcg.js`, `deck.js`, `tcg-dom.js`). Your choice is
     saved in `localStorage`. In this mode Hikaru's card and the project cards wear a **Magic frame**: a frame image per
-    card, in its own colours, generated with Higgsfield from one geometry (`design/magic-frame`), with every word still
+    card in a vintage newspaper style ("The Hikaru Herald"), in its own colours, generated with Higgsfield from one geometry (`design/magic-frame`), with every word still
     live text and every button a real link laid on the frame's plaques (see `docs/adr/0001`).
 - **Card groups**: three Magic cards that share one place in the deck, shown as a pack with a ×3 badge. Click it to open
   the three as a fan, like a hand of cards.
