@@ -8,16 +8,19 @@ from PIL import Image, ImageDraw, ImageFont
 W, H = 736, 1024          # Higgsfield size (multiples of 16), the card's 460x642 proportion
 S = W / 460               # card px -> template px
 # the geometry, in card px (460x642); keep in sync with the .mframe rules in site/styles.css
-# proportions of a real Magic card (modern frame): title bar at 4-9 % of the height, art window 10-55 % (about 1.4:1),
-# type line 56-61 %, text box 62-91 %, the power/toughness box over the text box's bottom right corner
+# the newspaper showcase layout of a real Magic card: a masthead with the mana cost on top, the headline (title) bar under
+# it, the art window (about 1.6:1), the type line, the text box, the power/toughness box over the text box's bottom right
+# corner, and a black collector strip along the bottom
 GEO = {
-    'title': (22, 24, 438, 58),
-    'art': (30, 64, 430, 350),
-    'type': (22, 356, 438, 388),
-    'text': (28, 394, 432, 586),
-    'pt': (354, 570, 440, 604),   # Hikaru's card only
-    'collector': (22, 606, 438, 634),
+    'masthead': (14, 12, 446, 50),
+    'title': (22, 56, 438, 88),
+    'art': (26, 94, 434, 352),
+    'type': (22, 358, 438, 386),
+    'text': (26, 392, 434, 596),
+    'pt': (356, 568, 440, 600),   # Hikaru's card only
+    'collector': (14, 604, 446, 634),
 }
+MASTHEAD = 'THE HIKARU HERALD'  # an original paper name (the real cards' masthead is Wizards of the Coast's)
 CARDS = {
     'hikaru': dict(color='gold', name='Hikaru Ogasawara', mana='W U B R G', pt='*/*',
                    type='Legendary Creature — Computer Engineering Student · Ibmec SP · 21',
@@ -60,13 +63,17 @@ def draw(card, blank):
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((0, 0, W - 1, H - 1), radius=round(18 * S), fill=(18, 16, 14))       # the black border
     d.rounded_rectangle((round(10 * S), round(10 * S), W - round(10 * S), round(602 * S)), radius=round(8 * S), fill=col)  # frame
+    x0, y0, x1, y1 = box('masthead')
+    d.rectangle(box('masthead'), fill=(236, 228, 206), outline=(40, 34, 28), width=2)
+    d.text(((x0 + x1) / 2 - 20, (y0 + y1) / 2), MASTHEAD, font=font(22, True), fill=(20, 16, 12), anchor='mm')
     for k in ('title', 'type'):
         d.rounded_rectangle(box(k), radius=round(6 * S), fill=(236, 228, 206), outline=(40, 34, 28), width=2)
     d.rectangle(box('art'), fill=(40, 40, 44), outline=(20, 18, 16), width=3)
     d.rectangle(box('text'), fill=(240, 232, 212), outline=(40, 34, 28), width=2)
     if c.get('pt'): d.rounded_rectangle(box('pt'), radius=round(6 * S), fill=(236, 228, 206), outline=(40, 34, 28), width=2)
     x0, y0, x1, y1 = box('title')
-    if not blank: d.text((x0 + 10, (y0 + y1) / 2), c['name'], font=font(20, True), fill=(20, 16, 12), anchor='lm')
+    if not blank: d.text(((x0 + x1) / 2, (y0 + y1) / 2), c['name'].upper(), font=font(20, True), fill=(20, 16, 12), anchor='mm')
+    x0, y0, x1, y1 = box('masthead')
     if not blank: d.text((x1 - 10, (y0 + y1) / 2), c['mana'], font=font(13, True), fill=(20, 16, 12), anchor='rm')
     x0, y0, x1, y1 = box('art')
     if not blank: d.text(((x0 + x1) / 2, (y0 + y1) / 2), 'ART', font=font(18), fill=(120, 120, 128), anchor='mm')

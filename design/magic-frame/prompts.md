@@ -1,5 +1,37 @@
 # Magic frame prompts (Higgsfield, GPT Image 2.6, 736x1024, quality high, 1k)
 
+## Current: the newspaper showcase (2026-11)
+
+The frames now follow seven real Magic cards in the vintage "breaking news" newspaper showcase style (sent by Hikaru as
+references; not kept in the repo). `template.py` draws that layout: masthead with the mana cost on the right, headline
+bar, art window, type line, text box, P/T box (Hikaru only), black collector strip. The masthead reads THE HIKARU HERALD,
+an original name. Hikaru's frame came first (blank template + the seven references); every project frame then used its
+blank template, Hikaru's frame as the series reference and one or two references of its colour:
+
+```
+Dress image 1 as an empty trading card frame in exactly the vintage 'breaking news' newspaper style of image 2 (same aged
+newsprint with creases and worn edges, same printed rules, ornaments, masthead lettering THE HIKARU HERALD, same empty boxes
+and black collector strip), but in the colour of images 3 and 4: {COLOUR}. Image 1 is a strict layout [...]. At the right end
+of the masthead: {MANA}. Do not copy any name, logo or set symbol from the references [...]. Every other area is empty.
+```
+
+| card | colour | frame job |
+|---|---|---|
+| hikaru | gold and sepia | 489e7946-3bcd-477d-9bab-da1306721bc7 (came back square; cropped to the card) |
+| portfolio | brick red, blue accents | 2590e3b4-723d-4625-a622-b33939c31966 |
+| aquasense | moss green, teal accents | 03d8268f-8439-4e11-8567-58a157874002 (redone from 26e4ace8, which had 3 plaques) |
+| ecos | black and grey | 66d083cd-3c73-4766-8d22-42edf10f4fde |
+| ferrovia | ivory, red accents | 0e59167b-5ed9-4f08-9b14-0e0dee71967a |
+| fabio | slate blue and indigo | 10ef2342-9228-46aa-a190-4d4b41149ad5 |
+| cofre | silver grey | f4e9b624-346c-4d44-8f02-e9139166101c |
+
+Hikaru's art (`assets/hikaru-card-art.png`, job f123dc42-ba4e-498f-92fd-c3dc9a18d695, from e4b6bfa2-ae61-4ce1-b076-d5768525255c)
+is an ink illustration in the same newspaper style, gold duotone, drawn from his photos with natural proportions (about
+seven and a half heads), arms crossed on a São Paulo street; the site crops it around him. The project cards keep their
+own pictures, printed as a duotone in the card's colour by CSS (`--tint`).
+
+Everything below is the history of the earlier, classic frame.
+
 References: image 1 = the card's geometry template (`template.py <card>`), image 2 = `style-reference.png` (the front of
 Hikaru's original Magic business card, the "book cover" classic frame). One variant per card. See docs/adr/0001.
 
@@ -77,7 +109,7 @@ ECOS, Ferrovia and IoT Safe came back with a somewhat shorter art window (about 
 own measured boxes, so they are kept. The `-full.webp` references above are from the first geometry: they still show the
 typography, not the proportions.
 
-## Hikaru's art window
+## Hikaru's art window (classic frame, replaced)
 
 `site/img/hikaru-art.webp` comes from `assets/hikaru-card-art.png`, job 01a8dc6c-f229-4e3e-9d12-5f79ece5852b (1024x720,
 the art window's 1.42:1): a studio portrait in a stronger, still informal pose (three-quarter turn, arms crossed, framed

@@ -431,33 +431,34 @@ html.tcg .sheen {
 }
 html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
-/* ---- Magic frame (docs/adr/0001): Hikaru's card and the project cards in TCG mode. The frame is an image made from
+/* ---- Magic frame (docs/adr/0001): Hikaru's card and the project cards in TCG mode. The frame (a newspaper showcase) is an image made from
    design/magic-frame; the live text sits in its boxes. Each slot gives its frame's boxes, measured in card px (460x642):
-   --t0/--t1 title bar, --tr where the mana gems start, --al/--a0/--ar/--a1 art window, --y0/--y1/--yr type line, --x text
+   --t0/--t1 title bar, --tr the headline bar's right end, --al/--a0/--ar/--a1 art window, --y0/--y1/--yr type line, --x text
    box top, --pb/--bh plaque row, --bw plaque width, --b1..--b4 plaque lefts, --c0/--c1 collector line ---- */
-[data-card="hikaru"] { --t0: 22px; --t1: 53px; --tr: 315px; --al: 25px; --a0: 60px; --ar: 435px; --a1: 349px; --y0: 358px; --y1: 385px; --yr: 420px; --x: 393px; --pb: 544px; --bh: 27px; --bw: 76px; --b1: 34px; --b2: 118px; --b3: 202px; --b4: 283px; --c0: 607px; --c1: 642px; --no: 'HKR • 0001'; --frame: url('img/frame-hikaru.webp'); }
-[data-card="portfolio"] { --t0: 25px; --t1: 55px; --tr: 364px; --al: 28px; --a0: 61px; --ar: 433px; --a1: 350px; --y0: 358px; --y1: 384px; --yr: 406px; --x: 394px; --pb: 545px; --bh: 26px; --bw: 124px; --b1: 34px; --b2: 166px; --c0: 607px; --c1: 639px; --no: 'HKR • 0002'; --frame: url('img/frame-portfolio.webp'); }
-[data-card="aquasense"] { --t0: 23px; --t1: 50px; --tr: 391px; --al: 24px; --a0: 57px; --ar: 436px; --a1: 352px; --y0: 361px; --y1: 383px; --yr: 380px; --x: 394px; --pb: 555px; --bh: 27px; --bw: 131px; --b1: 33px; --b2: 170px; --c0: 606px; --c1: 639px; --no: 'HKR • 0003'; --frame: url('img/frame-aquasense.webp'); }
-[data-card="ecos"] { --t0: 28px; --t1: 56px; --tr: 408px; --al: 29px; --a0: 61px; --ar: 431px; --a1: 331px; --y0: 339px; --y1: 366px; --yr: 411px; --x: 373px; --pb: 553px; --bh: 26px; --bw: 127px; --b1: 34px; --c0: 602px; --c1: 638px; --no: 'HKR • 0004'; --frame: url('img/frame-ecos.webp'); }
-[data-card="ferrovia"] { --t0: 26px; --t1: 53px; --tr: 383px; --al: 26px; --a0: 60px; --ar: 434px; --a1: 315px; --y0: 322px; --y1: 347px; --yr: 413px; --x: 357px; --pb: 541px; --bh: 28px; --bw: 127px; --b1: 33px; --c0: 604px; --c1: 640px; --no: 'HKR • 0005'; --frame: url('img/frame-ferrovia.webp'); }
-[data-card="fabio"] { --t0: 28px; --t1: 55px; --tr: 387px; --al: 28px; --a0: 62px; --ar: 432px; --a1: 351px; --y0: 359px; --y1: 383px; --yr: 417px; --x: 392px; --pb: 557px; --bh: 23px; --bw: 127px; --b1: 36px; --c0: 603px; --c1: 640px; --no: 'HKR • 0006'; --frame: url('img/frame-fabio.webp'); }
-[data-card="cofre"] { --t0: 26px; --t1: 55px; --tr: 405px; --al: 31px; --a0: 60px; --ar: 431px; --a1: 308px; --y0: 314px; --y1: 340px; --yr: 412px; --x: 348px; --pb: 552px; --bh: 24px; --bw: 127px; --b1: 37px; --c0: 606px; --c1: 641px; --no: 'HKR • 0007'; --frame: url('img/frame-cofre.webp'); }
+[data-card="hikaru"] { --t0: 60px; --t1: 92px; --tr: 438px; --al: 23px; --a0: 101px; --ar: 436px; --a1: 333px; --y0: 344px; --y1: 370px; --yr: 430px; --x: 377px; --pb: 547px; --bh: 25px; --bw: 71px; --b1: 35px; --b2: 113px; --b3: 193px; --b4: 273px; --c0: 590px; --c1: 634px; --no: 'HKR • 0001'; --frame: url('img/frame-hikaru.webp'); }
+[data-card="portfolio"] { --tint: #d9826a; --t0: 61px; --t1: 91px; --tr: 438px; --al: 23px; --a0: 100px; --ar: 436px; --a1: 334px; --y0: 344px; --y1: 370px; --yr: 430px; --x: 377px; --pb: 547px; --bh: 25px; --bw: 118px; --b1: 34px; --b2: 160px; --c0: 590px; --c1: 632px; --no: 'HKR • 0002'; --frame: url('img/frame-portfolio.webp'); }
+[data-card="aquasense"] { --tint: #a9c27a; --t0: 61px; --t1: 90px; --tr: 438px; --al: 22px; --a0: 102px; --ar: 436px; --a1: 332px; --y0: 342px; --y1: 369px; --yr: 430px; --x: 377px; --pb: 548px; --bh: 24px; --bw: 121px; --b1: 35px; --b2: 166px; --c0: 590px; --c1: 632px; --no: 'HKR • 0003'; --frame: url('img/frame-aquasense.webp'); }
+[data-card="ecos"] { --tint: #c9c9c9; --t0: 63px; --t1: 92px; --tr: 438px; --al: 23px; --a0: 103px; --ar: 436px; --a1: 335px; --y0: 346px; --y1: 372px; --yr: 430px; --x: 381px; --pb: 556px; --bh: 24px; --bw: 129px; --b1: 35px; --c0: 595px; --c1: 633px; --no: 'HKR • 0004'; --frame: url('img/frame-ecos.webp'); }
+[data-card="ferrovia"] { --tint: #e0b48f; --t0: 61px; --t1: 90px; --tr: 438px; --al: 24px; --a0: 100px; --ar: 434px; --a1: 326px; --y0: 335px; --y1: 361px; --yr: 430px; --x: 372px; --pb: 552px; --bh: 26px; --bw: 121px; --b1: 35px; --c0: 595px; --c1: 634px; --no: 'HKR • 0005'; --frame: url('img/frame-ferrovia.webp'); }
+[data-card="fabio"] { --tint: #8fa9cf; --t0: 62px; --t1: 91px; --tr: 438px; --al: 26px; --a0: 101px; --ar: 433px; --a1: 333px; --y0: 344px; --y1: 369px; --yr: 430px; --x: 377px; --pb: 549px; --bh: 24px; --bw: 123px; --b1: 36px; --c0: 591px; --c1: 631px; --no: 'HKR • 0006'; --frame: url('img/frame-fabio.webp'); }
+[data-card="cofre"] { --tint: #bdbdbd; --t0: 60px; --t1: 90px; --tr: 438px; --al: 22px; --a0: 100px; --ar: 437px; --a1: 333px; --y0: 344px; --y1: 370px; --yr: 430px; --x: 377px; --pb: 547px; --bh: 26px; --bw: 121px; --b1: 35px; --c0: 590px; --c1: 632px; --no: 'HKR • 0007'; --frame: url('img/frame-cofre.webp'); }
 
 /* the text box's content flows inside the card's padding (the text box minus the plaque row); everything else is placed */
 html.tcg .card.mf {
   --fs: 12.5px; --ink: #241a10; --serif: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Noto Serif', Georgia, serif;
+  --slab: Rockwell, 'Rockwell Nova', 'Roboto Slab', 'Courier New', Georgia, serif;
   padding: calc(var(--x) + 8px) 36px calc(642px - var(--pb) + 6px);
   gap: 5px; background: #111 var(--frame) 0 0 / 100% 100% no-repeat;
   color: var(--ink); font-family: var(--serif);
 }
-html.tcg:lang(ja) .card.mf { --serif: 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif; }
+html.tcg:lang(ja) .card.mf { --serif: 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif; --slab: var(--serif); }
 html.tcg .card.mf::before { content: none; }
 html.tcg .card.mf::after { content: none; }
 html.tcg .card.mf :is(.name, .art, .hud, .role, .foot) { position: absolute; margin: 0; }
 html.tcg .card.mf .name {
-  top: var(--t0); height: calc(var(--t1) - var(--t0)); left: 34px; right: calc(460px - var(--tr) + 6px);
-  font: 700 19px/calc(var(--t1) - var(--t0)) var(--serif); font-stretch: normal; font-variation-settings: normal;
-  letter-spacing: .02em; text-align: left; color: var(--ink); overflow: hidden; text-overflow: ellipsis;
+  top: var(--t0); height: calc(var(--t1) - var(--t0)); left: 32px; right: calc(460px - var(--tr) + 10px);
+  font: 700 19px/calc(var(--t1) - var(--t0)) var(--slab); font-stretch: normal; font-variation-settings: normal;
+  letter-spacing: .04em; text-transform: uppercase; text-align: center; color: var(--ink); overflow: hidden; text-overflow: ellipsis;
 }
 html.tcg .card.mf h1.name .w { display: inline; }
 html.tcg .card.mf :is(.art, .hud) {
@@ -465,6 +466,10 @@ html.tcg .card.mf :is(.art, .hud) {
 }
 /* Hikaru's art window: a wide crop of his portrait; the round photo stays in the page (its alt) but is not painted */
 html.tcg .card.mf .hud { background: url('img/hikaru-art.webp') 50% 0 / cover; }
+/* the project art printed like the newspaper's: grey ink under the card's colour (--tint), as a duotone */
+html.tcg .card.mf .art { overflow: hidden; background: #fff; }
+html.tcg .card.mf .art img { filter: grayscale(1) contrast(1.15) brightness(1.08); }
+html.tcg .card.mf .art::after { content: ''; position: absolute; inset: 0; background: var(--tint); mix-blend-mode: multiply; pointer-events: none; }
 html.tcg .card.mf .hud :is(i, .dot) { display: none; }
 html.tcg .card.mf .circ { opacity: 0; }
 html.tcg .card.mf .role {
@@ -511,15 +516,15 @@ html.tcg .card.mf .foot::before { content: var(--no); }
 html.tcg .card.mf .foot > :last-child { margin-left: auto; }
 html.tcg .card.mf .open { color: #cfc6b0; }
 /* Hikaru's card holds the most text in the same box */
-html.tcg [data-card="hikaru"] .card.mf { --fs: 11.5px; }
+html.tcg [data-card="hikaru"] .card.mf { --fs: 12px; }
 html.tcg .card.mf > * { flex-shrink: 0; }
 /* Focus and Speaks side by side, Base under them: one line less in the text box */
 html.tcg [data-card="hikaru"] .card.mf .panel { grid-template-columns: auto auto auto 1fr; column-gap: 6px; }
 html.tcg [data-card="hikaru"] .card.mf .panel dd:nth-of-type(1) { margin-right: 12px; }
 /* Hikaru's power/toughness box */
 html.tcg [data-card="hikaru"] .card.mf::after {
-  content: '*/*'; position: absolute; z-index: 1; inset: 569px auto auto 362px; width: 81px; height: 40px;
-  background: none; opacity: 1; font: 700 19px/40px var(--serif); text-align: center; color: var(--ink);
+  content: '*/*'; position: absolute; z-index: 1; inset: 552px auto auto 352px; width: 90px; height: 34px;
+  background: none; opacity: 1; font: 700 19px/34px var(--slab); text-align: center; color: var(--ink);
 }
 
 /* critters walk in the lane above the ground, in both modes; DOM order puts them over .ground and under
