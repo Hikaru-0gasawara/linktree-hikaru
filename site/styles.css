@@ -464,7 +464,7 @@ html.tcg .card.mf :is(.art, .hud) {
   top: var(--a0); left: var(--al); width: calc(var(--ar) - var(--al)); height: calc(var(--a1) - var(--a0)); border: 0;
 }
 /* Hikaru's art window: a wide crop of his portrait; the round photo stays in the page (its alt) but is not painted */
-html.tcg .card.mf .hud { background: url('img/hikaru-art.webp') 50% 40% / cover; }
+html.tcg .card.mf .hud { background: url('img/hikaru-art.webp') 50% 0 / cover; }
 html.tcg .card.mf .hud :is(i, .dot) { display: none; }
 html.tcg .card.mf .circ { opacity: 0; }
 html.tcg .card.mf .role {

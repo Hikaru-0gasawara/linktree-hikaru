@@ -76,3 +76,10 @@ Every text area is empty [...]; the plaques are empty engraved shapes; the art w
 ECOS, Ferrovia and IoT Safe came back with a somewhat shorter art window (about 1.55:1); the CSS follows each frame's
 own measured boxes, so they are kept. The `-full.webp` references above are from the first geometry: they still show the
 typography, not the proportions.
+
+## Hikaru's art window
+
+`site/img/hikaru-art.webp` comes from `assets/hikaru-card-art.png`, job 01a8dc6c-f229-4e3e-9d12-5f79ece5852b (1024x720,
+the art window's 1.42:1): a studio portrait in a stronger, still informal pose (three-quarter turn, arms crossed, framed
+from the thighs), generated from his own photos (the current portrait and three studio shots from the Data Vault's
+`overall-me` references) with a stock portrait used only as the pose reference.
