@@ -431,6 +431,91 @@ html.tcg .sheen {
 }
 html.tcg .tcg-card.dragging { cursor: grabbing; -webkit-user-select: none; user-select: none; }
 
+/* ---- Magic frame (docs/adr/0001): Hikaru's card and the project cards in TCG mode. The frame is an image made from
+   design/magic-frame; the live text sits in its boxes. Each slot gives its frame's boxes, measured in card px (460x642):
+   --t0/--t1 title bar, --tr where the mana gems start, --al/--a0/--ar/--a1 art window, --y0/--y1/--yr type line, --x text
+   box top, --pb/--bh plaque row, --bw plaque width, --b1..--b4 plaque lefts, --c0/--c1 collector line ---- */
+[data-card="hikaru"] { --t0: 17px; --t1: 48px; --tr: 322px; --al: 24px; --a0: 56px; --ar: 436px; --a1: 228px; --y0: 236px; --y1: 261px; --yr: 418px; --x: 270px; --pb: 545px; --bh: 25px; --bw: 77px; --b1: 34px; --b2: 118px; --b3: 202px; --b4: 286px; --c0: 607px; --c1: 642px; --no: 'HKR • 0001'; --frame: url('img/frame-hikaru.webp'); }
+[data-card="portfolio"] { --t0: 26px; --t1: 54px; --tr: 350px; --al: 28px; --a0: 62px; --ar: 432px; --a1: 233px; --y0: 241px; --y1: 266px; --yr: 408px; --x: 276px; --pb: 544px; --bh: 28px; --bw: 123px; --b1: 35px; --b2: 166px; --c0: 607px; --c1: 640px; --no: 'HKR • 0002'; --frame: url('img/frame-portfolio.webp'); }
+[data-card="aquasense"] { --t0: 21px; --t1: 48px; --tr: 391px; --al: 24px; --a0: 57px; --ar: 437px; --a1: 242px; --y0: 251px; --y1: 272px; --yr: 390px; --x: 283px; --pb: 556px; --bh: 27px; --bw: 132px; --b1: 30px; --b2: 171px; --c0: 607px; --c1: 639px; --no: 'HKR • 0003'; --frame: url('img/frame-aquasense.webp'); }
+[data-card="ecos"] { --t0: 29px; --t1: 56px; --tr: 408px; --al: 30px; --a0: 62px; --ar: 431px; --a1: 246px; --y0: 254px; --y1: 275px; --yr: 410px; --x: 282px; --pb: 552px; --bh: 28px; --bw: 128px; --b1: 34px; --c0: 602px; --c1: 638px; --no: 'HKR • 0004'; --frame: url('img/frame-ecos.webp'); }
+[data-card="ferrovia"] { --t0: 26px; --t1: 53px; --tr: 383px; --al: 27px; --a0: 61px; --ar: 434px; --a1: 231px; --y0: 238px; --y1: 263px; --yr: 410px; --x: 270px; --pb: 540px; --bh: 29px; --bw: 127px; --b1: 33px; --c0: 605px; --c1: 642px; --no: 'HKR • 0005'; --frame: url('img/frame-ferrovia.webp'); }
+[data-card="fabio"] { --t0: 29px; --t1: 56px; --tr: 387px; --al: 28px; --a0: 62px; --ar: 432px; --a1: 231px; --y0: 238px; --y1: 262px; --yr: 416px; --x: 271px; --pb: 557px; --bh: 23px; --bw: 128px; --b1: 36px; --c0: 612px; --c1: 640px; --no: 'HKR • 0006'; --frame: url('img/frame-fabio.webp'); }
+[data-card="cofre"] { --t0: 26px; --t1: 55px; --tr: 404px; --al: 31px; --a0: 60px; --ar: 429px; --a1: 232px; --y0: 238px; --y1: 263px; --yr: 410px; --x: 271px; --pb: 551px; --bh: 26px; --bw: 128px; --b1: 36px; --c0: 606px; --c1: 642px; --no: 'HKR • 0007'; --frame: url('img/frame-cofre.webp'); }
+
+/* the text box's content flows inside the card's padding (the text box minus the plaque row); everything else is placed */
+html.tcg .card.mf {
+  --ink: #241a10; --serif: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Noto Serif', Georgia, serif;
+  padding: calc(var(--x) + 9px) 38px calc(642px - var(--pb) + 8px);
+  gap: 7px; background: #111 var(--frame) 0 0 / 100% 100% no-repeat;
+  color: var(--ink); font-family: var(--serif);
+}
+html.tcg:lang(ja) .card.mf { --serif: 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', 'Noto Serif JP', serif; }
+html.tcg .card.mf::before { content: none; }
+html.tcg .card.mf::after { content: none; }
+html.tcg .card.mf :is(.name, .art, .hud, .role, .foot) { position: absolute; margin: 0; }
+html.tcg .card.mf .name {
+  top: var(--t0); height: calc(var(--t1) - var(--t0)); left: 34px; right: calc(460px - var(--tr) + 6px);
+  font: 700 19px/calc(var(--t1) - var(--t0)) var(--serif); font-stretch: normal; font-variation-settings: normal;
+  letter-spacing: .02em; text-align: left; color: var(--ink); overflow: hidden; text-overflow: ellipsis;
+}
+html.tcg .card.mf h1.name .w { display: inline; }
+html.tcg .card.mf :is(.art, .hud) {
+  top: var(--a0); left: var(--al); width: calc(var(--ar) - var(--al)); height: calc(var(--a1) - var(--a0)); border: 0;
+}
+/* Hikaru's art window: a wide crop of his portrait; the round photo stays in the page (its alt) but is not painted */
+html.tcg .card.mf .hud { background: url('img/hikaru-art.webp') 50% 40% / cover; }
+html.tcg .card.mf .hud :is(i, .dot) { display: none; }
+html.tcg .card.mf .circ { opacity: 0; }
+html.tcg .card.mf .role {
+  top: var(--y0); height: calc(var(--y1) - var(--y0)); left: 32px; right: calc(460px - var(--yr) + 4px);
+  display: flex; align-items: center; gap: .3em; white-space: nowrap; overflow: hidden;
+  font: 700 12.5px/1 var(--serif); color: var(--ink); text-align: left;
+}
+html.tcg .card.mf .role br { display: none; }
+html.tcg .card.mf .role [data-i18n="role"]::after { content: ' ·'; }
+html.tcg .card.mf :is(.desc, .about p) { font-size: 13.5px; line-height: 1.38; color: var(--ink); }
+html.tcg .card.mf .about p { font-style: italic; }
+html.tcg .card.mf .about .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+html.tcg .card.mf .panel { background: none; border: 0; padding: 0; gap: 1px 8px; font-size: 13.5px; line-height: 1.35; }
+html.tcg .card.mf .panel dt {
+  color: var(--ink); font: italic 700 13.5px/1.35 var(--serif); letter-spacing: 0; text-transform: none;
+}
+html.tcg .card.mf .chips { gap: 4px; margin-top: 8px; }
+html.tcg .card.mf .chips li {
+  padding: 1px 6px; border: 1px solid rgb(60 40 20 / .4); border-radius: 3px; background: rgb(255 248 230 / .35);
+  color: var(--ink); font-size: 11.5px;
+}
+/* the buttons are the frame's plaques */
+html.tcg .card.mf .links { position: absolute; inset: 0; display: block; pointer-events: none; }
+html.tcg .card.mf .grid { display: contents; }
+html.tcg .card.mf .btn {
+  position: absolute; top: var(--pb); left: var(--b1); width: var(--bw); height: var(--bh); min-height: 0; padding: 0 4px;
+  gap: 5px; border: 0; border-radius: 4px; background: none; color: var(--ink); pointer-events: auto;
+  font: 700 12px/1 var(--serif);
+}
+html.tcg .card.mf .btn:nth-child(2) { left: var(--b2); }
+html.tcg .card.mf .btn:nth-child(3) { left: var(--b3); }
+html.tcg .card.mf .btn:nth-child(4) { left: var(--b4); }
+html.tcg .card.mf .btn .ico { width: 7px; height: 7px; transform: rotate(45deg); background: #6b4a1f; }
+html.tcg .card.mf .btn:focus-visible { outline-color: var(--ink); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) {
+  html.tcg .card.mf .btn:hover { background: rgb(255 240 200 / .35); filter: none; }
+}
+html.tcg .card.mf .btn:active { background: rgb(60 40 20 / .12); filter: none; }
+html.tcg .card.mf .foot {
+  top: var(--c0); height: calc(var(--c1) - var(--c0)); left: 30px; right: 30px; align-items: center; justify-content: flex-start;
+  gap: 14px; color: #cfc6b0; font-size: 9px; letter-spacing: .04em;
+}
+html.tcg .card.mf .foot::before { content: var(--no); }
+html.tcg .card.mf .foot > :last-child { margin-left: auto; }
+html.tcg .card.mf .open { color: #cfc6b0; }
+/* Hikaru's power/toughness box */
+html.tcg [data-card="hikaru"] .card.mf::after {
+  content: '*/*'; position: absolute; z-index: 1; inset: 575px auto auto 371px; width: 64px; height: 32px;
+  background: none; opacity: 1; font: 700 17px/32px var(--serif); text-align: center; color: var(--ink);
+}
+
 /* critters walk in the lane above the ground, in both modes; DOM order puts them over .ground and under
    the page content (plain: the positioned .card, so text and links stay on top) and .tcg-stage */
 .critters {

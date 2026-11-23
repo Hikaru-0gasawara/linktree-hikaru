@@ -1,0 +1,5 @@
+# Magic frame: a generated frame image under live HTML text
+
+In TCG mode, Hikaru's card and the project cards wear a Magic frame whose whole finish (metal, ornaments, typography) is designed by Higgsfield, but the frame used on the site is an image with **empty** text areas, and every word on the card stays live HTML laid over it. Each card is generated twice from one geometry template: first complete, with placeholder text, as the design and typography reference; then the same design with the text areas blank, which is the image the site uses. The HTML is matched by hand to the reference's typography with the closest free fonts.
+
+We rejected baking the text into the image (one image per card per language): the card must switch between Portuguese, English and Japanese, its contact and project links must be real, accessible buttons, and any text change would mean generating the art again. Plain mode keeps its own look; only TCG mode wears the frame. Only Hikaru's card and the project cards get it: the Magic business cards, single Magic cards and card groups are already finished images and stay as they are.
