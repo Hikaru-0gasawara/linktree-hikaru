@@ -4,6 +4,7 @@ import { letterVars } from '../site/split.js';
 import { scatter, driftY } from '../site/gutter.js';
 import { STRINGS } from '../site/i18n.js';
 import { pageTarget } from '../site/pager.js';
+import { shownAt, arrival } from '../site/reveal.js';
 
 test('letterVars: index, distance from the middle letter, and its size', () => {
   assert.deepEqual(letterVars(3).map(({ d }) => d), [-1, 0, 1]);
@@ -42,4 +43,23 @@ test('pageTarget: one card per gesture, a tall card scrolls to its edge first', 
   assert.equal(pageTarget(tall, 0, 800, 1, 2000), null); // scroll inside it
   assert.equal(pageTarget(tall, 400, 800, 1, 2000), 1200); // at its bottom: next card
   assert.equal(pageTarget(tall, 400, 800, -1, 2000), null); // back up inside it
+});
+
+test('arrival: a card replays each time it comes back, from either direction', () => {
+  const view = 658, h = 658;
+  assert.equal(shownAt(0, h, view), 1);
+  assert.equal(shownAt(-h, h, view), 0); // passed, above
+  assert.equal(shownAt(h, h, view), 0); // still to come, below
+  assert.equal(shownAt(-h / 2, h, view), 0.5);
+  // down to the next card and back up: gone, then arrives again
+  let away = false;
+  for (const top of [-100, -400, -658]) away = arrival(away, shownAt(top, h, view));
+  assert.equal(away, true);
+  away = arrival(away, shownAt(-600, h, view)); // a sliver back on screen: not yet
+  assert.equal(away, true);
+  away = arrival(away, shownAt(-500, h, view));
+  assert.equal(away, false);
+  // from below, the same
+  away = arrival(true, shownAt(500, h, view));
+  assert.equal(away, false);
 });

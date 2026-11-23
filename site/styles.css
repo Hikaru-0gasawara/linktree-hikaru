@@ -209,7 +209,9 @@ h1.name .w { display: block; }
 .open { color: var(--jade); }
 
 /* ---- motion: transform + opacity only, nothing changes layout ---- */
-:root { --ease: cubic-bezier(.2, .7, .2, 1); }
+:root { --ease: cubic-bezier(.2, .7, .2, 1); --slow: 1; }
+/* plain mode reads at a calmer pace: its timed motion runs half again as long */
+html:not(.tcg) { --slow: 1.5; }
 
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--y)); } }
@@ -217,18 +219,18 @@ h1.name .w { display: block; }
 @keyframes slide { from { opacity: 0; transform: translate(var(--tx), var(--ty)); } }
 @keyframes ring { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(2); } }
 
-.enter-lead { --y: 12px; animation: rise 550ms var(--ease) both; }
+.enter-lead { --y: 12px; animation: rise calc(550ms * var(--slow)) var(--ease) both; }
 .hud.enter-lead { animation-name: pop; }
-.hud i { animation: slide 350ms var(--ease) 120ms both; }
+.hud i { animation: slide calc(350ms * var(--slow)) var(--ease) calc(120ms * var(--slow)) both; }
 .hud i:nth-child(1) { --tx: 4px; --ty: 4px; }
 .hud i:nth-child(2) { --tx: -4px; --ty: 4px; }
 .hud i:nth-child(3) { --tx: 4px; --ty: -4px; }
 .hud i:nth-child(4) { --tx: -4px; --ty: -4px; }
-.enter-support { --y: 8px; animation: rise 450ms var(--ease) 110ms both; }
-.enter-cta { --y: 6px; animation: rise 400ms var(--ease) 180ms both; }
-.enter-fade { animation: fade 400ms var(--ease) both; }
-/* same tab, later load: skip the entrance */
-.no-enter .enter-lead, .no-enter .enter-support, .no-enter .enter-cta, .no-enter .enter-fade, .no-enter .hud i { animation: none; }
+.enter-support { --y: 8px; animation: rise calc(450ms * var(--slow)) var(--ease) calc(110ms * var(--slow)) both; }
+.enter-cta { --y: 6px; animation: rise calc(400ms * var(--slow)) var(--ease) calc(180ms * var(--slow)) both; }
+.enter-fade { animation: fade calc(400ms * var(--slow)) var(--ease) both; }
+/* same tab, later load: card mode skips the entrance (plain mode plays it on every arrival, reveal.js) */
+.no-enter.tcg :is(.enter-lead, .enter-support, .enter-cta, .enter-fade, .hud i) { animation: none; }
 
 /* press feedback */
 .btn, .lang button { transition: transform 100ms ease-out, background-color 100ms ease-out, filter 100ms ease-out; }
@@ -249,7 +251,7 @@ h1.name .w { display: block; }
 
 @media (prefers-reduced-motion: reduce) {
   .enter-lead, .hud.enter-lead, .enter-support, .enter-cta, .enter-fade, .hud i { animation: fade 200ms ease-out both; }
-  .no-enter .enter-lead, .no-enter .enter-support, .no-enter .enter-cta, .no-enter .enter-fade, .no-enter .hud i { animation: none; }
+  .no-enter.tcg :is(.enter-lead, .enter-support, .enter-cta, .enter-fade, .hud i) { animation: none; }
   .dot::after { animation: none; }
   .btn:active, .lang button:active { transform: none; }
 }
@@ -539,8 +541,8 @@ html:not(.tcg) .name .ch { display: inline-block; }
 /* the name, on the first visit: its letters rise and unfold in reading order */
 @keyframes ch-in { from { opacity: 0; translate: 0 .7em; scale: 1 .15; } }
 html:not(.tcg) h1.name.enter-lead { animation: none; }
-html:not(.tcg) h1.name .ch { transform-origin: 50% 100%; animation: ch-in 700ms cubic-bezier(.16, 1, .3, 1) calc(60ms + var(--k) * 35ms) both; }
-html.no-enter h1.name .ch, html.switched h1.name .ch { animation: none; }
+html:not(.tcg) h1.name .ch { transform-origin: 50% 100%; animation: ch-in calc(700ms * var(--slow)) cubic-bezier(.16, 1, .3, 1) calc((60ms + var(--k) * 35ms) * var(--slow)) both; }
+html.switched h1.name .ch { animation: none; }
 
 /* ---- plain mode: the page turns one card per scroll or swipe, and a project card assembles as it arrives ----
    The card is blank (--p 0) until reveal.js marks it .assemble, then --p runs 0..1 in time. Each block lands over its own
@@ -562,7 +564,7 @@ html:not(.tcg) .deck-track { scroll-snap-type: y mandatory; }
 html:not(.tcg) .deck-slot:not([data-group]) > .tcg-card > .face-front, html:not(.tcg) .deck-slot[data-group] { scroll-snap-align: start; scroll-snap-stop: always; }
 @keyframes assemble { from { --p: 0; } to { --p: 1; } }
 html:not(.tcg) .proj { --p: 0; }
-html:not(.tcg) .proj.assemble { animation: assemble 1600ms linear both; }
+html:not(.tcg) .proj.assemble { animation: assemble calc(1600ms * var(--slow)) linear both; }
 html:not(.tcg) .proj > :not(.sheen) {
   --w: clamp(0, (var(--p) - var(--wa, 0)) / (var(--wb, 1) - var(--wa, 0)), 1);
   --in: calc(var(--w) * var(--w) * (3 - 2 * var(--w)));
@@ -684,11 +686,11 @@ html:not(.tcg) .proj[data-fx="cofre"] .foot > :last-child { translate: 0 calc(va
 
 /* icons: on the first card the squares spin into place one after another */
 @keyframes ico-in { from { opacity: 0; rotate: -180deg; scale: .2; } }
-html:not(.tcg) .grid .ico { animation: ico-in 500ms cubic-bezier(.16, 1, .3, 1) 300ms both; }
-html:not(.tcg) .grid .btn:nth-child(2) .ico { animation-delay: 360ms; }
-html:not(.tcg) .grid .btn:nth-child(3) .ico { animation-delay: 420ms; }
-html:not(.tcg) .grid .btn:nth-child(4) .ico { animation-delay: 480ms; }
-html.no-enter .grid .ico, html.switched .grid .ico { animation: none; }
+html:not(.tcg) .grid .ico { animation: ico-in calc(500ms * var(--slow)) cubic-bezier(.16, 1, .3, 1) calc(300ms * var(--slow)) both; }
+html:not(.tcg) .grid .btn:nth-child(2) .ico { animation-delay: calc(360ms * var(--slow)); }
+html:not(.tcg) .grid .btn:nth-child(3) .ico { animation-delay: calc(420ms * var(--slow)); }
+html:not(.tcg) .grid .btn:nth-child(4) .ico { animation-delay: calc(480ms * var(--slow)); }
+html.switched .grid .ico { animation: none; }
 /* hover: the square turns into a diamond (its own transform, so it never fights the scroll motion) */
 @media (hover: hover) and (pointer: fine) {
   .ico { transition: transform 200ms cubic-bezier(.16, 1, .3, 1); }
@@ -751,7 +753,7 @@ html.no-enter .grid .ico, html.switched .grid .ico { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   html:not(.tcg) h1.name .ch { translate: none; rotate: none; scale: none; }
   html:not(.tcg) h1.name .ch, html:not(.tcg) .grid .ico { animation: fade 200ms ease-out both; }
-  html.no-enter h1.name .ch, html.no-enter .grid .ico, html.switched h1.name .ch, html.switched .grid .ico { animation: none; }
+  html.switched h1.name .ch, html.switched .grid .ico { animation: none; }
   .btn:hover .ico { transform: none; }
   .rail-hint::after { animation: none; }
   .rail-mark, .rail button { transition: none; }
