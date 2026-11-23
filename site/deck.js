@@ -45,7 +45,8 @@ export const fanTurn = (spread) => 7 * spread / 0.62;
 
 // the card scale that fits the open fan across the screen, counting the outer cards' turned top corners
 export function fanLayout(vw, vh, n) {
-  const spread = n > 1 ? (vw < 700 ? 0.3 : 0.62) : 0;
+  // a big hand overlaps more: the fan never spans more than 2 (phone) or 3 card widths of offsets
+  const spread = n > 1 ? Math.min(vw < 700 ? 0.3 : 0.62, (vw < 700 ? 2 : 3) / (n - 1)) : 0;
   const t = fanTurn(spread) * (n - 1) / 2 * Math.PI / 180;
   const width = (n - 1) * spread + 2 * (0.5 * Math.cos(t) + (642 / 460) * Math.sin(t)); // in card widths
   return { s: Math.min(deckScale(vw, vh) * 0.86, (vw - 24) / (460 * width)), spread };
@@ -54,5 +55,6 @@ export function fanLayout(vw, vh, n) {
 // card i of n in the open fan: x, y in card widths, rz in degrees; the middle card stands upright
 export function fanPose(i, n, spread) {
   const k = i - (n - 1) / 2;
-  return { x: k * spread, y: 0.03 * k * k, rz: k * fanTurn(spread) };
+  const u = k * spread / 0.62; // the arc keeps its shape however tight the hand: a three-card fan's drop per desktop step
+  return { x: k * spread, y: 0.03 * u * u, rz: k * fanTurn(spread) };
 }

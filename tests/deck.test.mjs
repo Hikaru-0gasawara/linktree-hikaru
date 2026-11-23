@@ -89,12 +89,12 @@ test('fanPose: a hand of cards, symmetric, the middle one upright', () => {
 });
 
 test('fanLayout: every corner of the open fan stays on screen, from a 320px phone to a desktop', () => {
-  for (const [vw, vh] of [[320, 568], [360, 640], [402, 874], [768, 1024], [1440, 900]]) {
-    const { s, spread } = fanLayout(vw, vh, 3);
+  for (const n of [3, 13]) for (const [vw, vh] of [[320, 568], [360, 640], [402, 874], [768, 1024], [1440, 900]]) {
+    const { s, spread } = fanLayout(vw, vh, n);
     assert.ok(s > 0 && s <= deckScale(vw, vh), `${vw}: scale ${s}`);
     const W = 460 * s, H = 642 * s;
-    for (let i = 0; i < 3; i++) {
-      const { x, rz } = fanPose(i, 3, spread), a = rz * Math.PI / 180;
+    for (let i = 0; i < n; i++) {
+      const { x, rz } = fanPose(i, n, spread), a = rz * Math.PI / 180;
       // corners relative to the bottom-centre pivot, turned, then moved to the card's place in the fan
       for (const [cx, cy] of [[-W / 2, 0], [W / 2, 0], [-W / 2, -H], [W / 2, -H]]) {
         const px = vw / 2 + x * W + cx * Math.cos(a) - cy * Math.sin(a);
@@ -103,4 +103,7 @@ test('fanLayout: every corner of the open fan stays on screen, from a 320px phon
     }
   }
   assert.equal(fanLayout(1440, 900, 1).spread, 0);
+  // a big hand (the Magic group) overlaps more instead of shrinking: still a usable size on a desktop
+  const big = fanLayout(1440, 900, 13);
+  assert.ok(big.spread < 0.62 && big.s > 0.5, JSON.stringify(big));
 });

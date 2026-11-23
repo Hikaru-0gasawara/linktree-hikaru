@@ -83,28 +83,24 @@ const CODE = 'https://github.com/Hikaru-0gasawara/Portifolio';
 const slots = html.split('<div class="deck-slot"').slice(1);
 const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
 
-test('deck: Hikaru first, then project cards, then the Magic-format cards, always last', () => {
-  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'aquasense', 'ecos', 'ferrovia', 'fabio', 'cofre', 'mtg-hikaru',
-    'mtg-card-archengineer', 'mtg-card-wanted', 'mtg-card-pulp', 'mtg-archengineer', 'mtg-wanted', 'mtg-pulp', 'grupo-1', 'grupo-2']);
-  const mtg = slots.map((s) => s.includes('class="card face-front mtg"'));
-  const first = mtg.indexOf(true);
-  assert.ok(first > 0 && mtg.slice(first).every(Boolean), 'a Magic card before a project card');
-  const groups = slots.map((s) => s.startsWith(' data-card="grupo-') && / data-group>/.test(s));
-  const g = groups.indexOf(true);
-  assert.ok(g > first && groups.slice(g).every(Boolean), 'groups come after the single Magic cards');
+test('deck: Hikaru first, then project cards, then one group with every Magic-format card, always last', () => {
+  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'aquasense', 'ecos', 'ferrovia', 'fabio', 'cofre', 'magic']);
+  const magic = slot('magic');
+  assert.match(magic, /^ data-card="magic" data-group>/);
+  const labels = [...magic.matchAll(/<div class="tcg-card" data-label="(\w+)">/g)].map((m) => m[1]);
+  // Hikaru's Magic business card on top (plain mode shows only it), then the business cards, the single cards, the sets
+  assert.deepEqual(labels, ['mtgLabel', 'cardArchLabel', 'cardWantedLabel', 'cardPulpLabel', 'prompterLabel', 'rogueLabel', 'grandLabel',
+    'kogenLabel', 'pjLabel', 'claudeLabel', 'arcLabel', 'pjkLabel', 'koshinLabel']);
+  assert.match(magic, new RegExp(`<span class="group-badge" aria-hidden="true">×${labels.length}</span>`));
   for (const s of slots) {
     assert.match(s, /class="tcg-card"/);
     if (/ data-group>/.test(s)) {
       const items = s.split('<div class="fan-item"').slice(1);
-      assert.equal(items.length, 3);
       items.forEach((it, i) => {
         assert.ok(it.startsWith(` style="--i: ${i}"><div class="tcg-card" data-label="`), it.slice(0, 80));
         assert.match(it, /class="card face-front mtg"/);
         assert.match(it, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
       });
-    } else if (s.includes('face-front mtg')) {
-      assert.match(s, /data-label="[a-zA-Z]+Label"/);
-      assert.match(s, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
     } else {
       assert.match(s, /class="card face-front mf"/);
       assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);

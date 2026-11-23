@@ -29,8 +29,7 @@ test('driftY: moves up with the scroll at its speed and wraps at the band height
 });
 
 test('the index and its hint are translated', () => {
-  for (const l of Object.keys(STRINGS)) for (const k of ['railLabel', 'scrollHint', 'railMtg', 'railGroup']) assert.ok(STRINGS[l][k], `${l}.${k}`);
-  for (const l of Object.keys(STRINGS)) assert.match(STRINGS[l].railGroup, /\{n\}/);
+  for (const l of Object.keys(STRINGS)) for (const k of ['railLabel', 'scrollHint', 'railMtg']) assert.ok(STRINGS[l][k], `${l}.${k}`);
 });
 
 test('pageTarget: one card per gesture, a tall card scrolls to its edge first', () => {
