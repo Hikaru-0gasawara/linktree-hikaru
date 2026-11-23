@@ -106,7 +106,7 @@ test('deck: Hikaru first, then project cards, then the Magic-format cards, alway
       assert.match(s, /data-label="[a-zA-Z]+Label"/);
       assert.match(s, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
     } else {
-      assert.match(s, /class="card face-front"/);
+      assert.match(s, /class="card face-front mf"/);
       assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);
     }
   }

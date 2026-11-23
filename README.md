@@ -14,7 +14,9 @@ runtime dependencies. Live at https://hikaru-card.vercel.app/.
   - **TCG mode** (the default on mouse and trackpad devices; switch it with the **TCG** button): each card is a 3D object.
     Drag to turn it, **Flip** to see its back, **Reset** to straighten it. Scrolling leafs through the deck: the top card
     arcs away onto the passed pile and the next swings in from under it (`tcg.js`, `deck.js`, `tcg-dom.js`). Your choice is
-    saved in `localStorage`.
+    saved in `localStorage`. In this mode Hikaru's card and the project cards wear a **Magic frame**: a frame image per
+    card, in its own colours, generated with Higgsfield from one geometry (`design/magic-frame`), with every word still
+    live text and every button a real link laid on the frame's plaques (see `docs/adr/0001`).
 - **Card groups**: three Magic cards that share one place in the deck, shown as a pack with a ×3 badge. Click it to open
   the three as a fan, like a hand of cards.
 - **Three languages**: Português, English and 日本語, from the switch at the top. The choice is saved. Every text, label,
@@ -80,8 +82,8 @@ site/                  everything that is served
   img/  fonts/  resume/
 scripts/               strip-phone.py (résumés), build-mtg-cards.py (Magic cards)
 tests/                 node:test suites, one per module, plus page.test.mjs for the markup
-design/                source art: card backs, logo and icons
-docs/                  design specs and implementation plans (docs/superpowers), agent notes (docs/agents)
+design/                source art: card backs, logo and icons; magic-frame/: the Magic frame's geometry, prompts and references
+docs/                  design specs and implementation plans (docs/superpowers), decisions (docs/adr), agent notes (docs/agents)
 vercel.json            Vercel: serve ./site as is, clean URLs
 wrangler.jsonc         Cloudflare Workers static assets: serve ./site
 ```
