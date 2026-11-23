@@ -84,7 +84,8 @@ const slots = html.split('<div class="deck-slot"').slice(1);
 const slot = (name) => slots.find((s) => s.startsWith(` data-card="${name}"`)) ?? '';
 
 test('deck: Hikaru first, then project cards, then the Magic-format cards, always last', () => {
-  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'aquasense', 'ecos', 'ferrovia', 'fabio', 'cofre', 'mtg-hikaru', 'grupo-1', 'grupo-2']);
+  assert.deepEqual(slots.map((s) => / data-card="([^"]+)"/.exec(s)[1]), ['hikaru', 'portfolio', 'aquasense', 'ecos', 'ferrovia', 'fabio', 'cofre', 'mtg-hikaru',
+    'mtg-card-archengineer', 'mtg-card-wanted', 'mtg-card-pulp', 'mtg-archengineer', 'mtg-wanted', 'mtg-pulp', 'grupo-1', 'grupo-2']);
   const mtg = slots.map((s) => s.includes('class="card face-front mtg"'));
   const first = mtg.indexOf(true);
   assert.ok(first > 0 && mtg.slice(first).every(Boolean), 'a Magic card before a project card');
@@ -102,8 +103,8 @@ test('deck: Hikaru first, then project cards, then the Magic-format cards, alway
         assert.match(it, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
       });
     } else if (s.includes('face-front mtg')) {
-      assert.match(s, /data-label="mtgLabel"/);
-      assert.match(s, /class="face-back mtg"><img src="img\/mtg-hikaru-back\.webp"/);
+      assert.match(s, /data-label="[a-zA-Z]+Label"/);
+      assert.match(s, /class="face-back mtg"><img src="img\/(mtg-[a-z-]+-back|card-back)\.webp"/);
     } else {
       assert.match(s, /class="card face-front"/);
       assert.match(s, /class="face-back"><img src="img\/card-back\.webp"/);
@@ -114,7 +115,7 @@ test('deck: Hikaru first, then project cards, then the Magic-format cards, alway
 
 test('image alt texts are translated', () => {
   const keys = [...html.matchAll(/data-i18n-alt="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(keys.length, 17);
+  assert.equal(keys.length, 26);
   for (const k of keys) assert.ok(k in STRINGS.pt, `unknown key ${k}`);
 });
 
